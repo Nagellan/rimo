@@ -1,10 +1,10 @@
 .tools {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 
-    position: fixed;
-    left: 4px;
-    top: 50%;
-    transform: translateY(-50%);
+	position: fixed;
+	left: 4px;
+	top: 50%;
+	transform: translateY(-50%);
 }
