@@ -51,8 +51,8 @@ export const Board = () => {
 
 		if (widget) {
 			const newWidget = widget.clone();
-			newWidget.x = endX - newWidget.width / 2;
-			newWidget.y = endY + newWidget.height / 2;
+			newWidget.x = endX - (startX - widget.x);
+			newWidget.y = endY - (startY - widget.y);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			setWidgets(({ [widget.id]: _, ...rest }) => ({
 				...rest,
