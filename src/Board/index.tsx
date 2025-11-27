@@ -37,13 +37,7 @@ export const Board = () => {
 		let widget: Widget | null = null;
 
 		for (const id in widgets) {
-			const { x, y, width, height } = widgets[id];
-			if (
-				startX >= x &&
-				startX <= x + width &&
-				startY >= y - height &&
-				startY <= y
-			) {
+			if (widgets[id].containsPoint(startX, startY)) {
 				widget = widgets[id];
 				break;
 			}

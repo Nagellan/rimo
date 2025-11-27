@@ -26,4 +26,13 @@ export class Rectangle extends Widget {
 			this.style.clone(),
 		);
 	}
+
+	public containsPoint(x: number, y: number): boolean {
+		return (
+			x >= this.x &&
+			x <= this.x + this.width &&
+			y >= this.y - this.height &&
+			y <= this.y
+		);
+	}
 }

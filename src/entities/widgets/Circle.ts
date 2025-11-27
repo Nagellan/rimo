@@ -17,4 +17,10 @@ export class Circle extends Widget {
 	public clone() {
 		return new Circle(this.x, this.y, this.radius, this.style.clone());
 	}
+
+	public containsPoint(x: number, y: number): boolean {
+		const centerX = this.x + this.radius;
+		const centerY = this.y - this.radius;
+		return (x - centerX) ** 2 + (y - centerY) ** 2 <= this.radius ** 2;
+	}
 }
