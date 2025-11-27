@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { CanvasRenderer } from '../entities/renderers/CanvasRenderer';
 import type { Widget } from '../entities/widgets/Widget';
+import { useCanvasMove } from './useCanvasMove';
 
 type Props = {
 	width: number;
@@ -10,24 +11,38 @@ type Props = {
 };
 
 export const Canvas = ({ width, height, widgets }: Props) => {
-	const [renderer, setRenderer] = useState<CanvasRenderer | null>(null)
+	const [x, setX] = useState(0);
+	const [y, setY] = useState(0);
+	const [renderer, setRenderer] = useState<CanvasRenderer | null>(null);
 
 	useEffect(() => {
 		if (!renderer) return;
-		renderer.setWidth(width)
+		renderer.setX(x);
+		renderer.setY(y);
+	}, [renderer, x, y]);
+
+	useEffect(() => {
+		if (!renderer) return;
+		renderer.setWidth(width);
 		renderer.setHeight(height);
-	}, [renderer, width, height])
+	}, [renderer, width, height]);
+
+	const { onMouseDown, onMouseUp } = useCanvasMove((deltaX, deltaY) => {
+		setX((prev) => prev + deltaX);
+		setY((prev) => prev + deltaY);
+	});
 
 	const onRef = (el: HTMLCanvasElement | null) => {
 		if (!el) return;
 		const ctx = el.getContext('2d');
 		if (!ctx) return;
-		setRenderer(new CanvasRenderer(ctx, width, height))
-	}
+		setRenderer(new CanvasRenderer(ctx, width, height, x, y));
+	};
 
 	if (renderer) {
+		renderer.clear();
 		for (const id in widgets) {
-			widgets[id].accept(renderer)
+			widgets[id].accept(renderer);
 		}
 	}
 
@@ -37,6 +52,8 @@ export const Canvas = ({ width, height, widgets }: Props) => {
 			width={width}
 			height={height}
 			style={{ display: 'block' }}
+			onMouseDown={onMouseDown}
+			onMouseUp={onMouseUp}
 		/>
 	);
 };
