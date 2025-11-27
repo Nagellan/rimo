@@ -2,48 +2,33 @@ import { useState } from 'react';
 
 import { Canvas } from '../Canvas';
 import { Tools } from '../Tools';
-import type { Entities } from '../types/entities';
+import type { Widget } from '../entities/widgets/Widget';
+import { Rectangle } from '../entities/widgets/Rectangle';
+import { Circle } from '../entities/widgets/Circle';
+import { Style } from '../entities/styles/Style'
 import { useWindowSize } from './useWindowSize';
 
-let counter = 0;
+const style = new Style().fill('#ffffff').stroke('#000000', 1);
 
 export const Board = () => {
-	const [entities, setEntities] = useState<Entities>(() => ({}));
-
 	const { width, height } = useWindowSize();
 
+	const [widgets, setWidgets] = useState<Record<string, Widget>>(() => ({}))
+
 	const addRectangle = () => {
-		setEntities((prev) => ({
-			...prev,
-			[++counter]: {
-				id: counter,
-				type: 'rectangle',
-				payload: {
-					x: -50,
-					y: 25,
-					width: 100,
-					height: 50,
-					color: '#000000',
-				},
-			},
-		}));
+		const rect = new Rectangle(-50, 25, 100, 50, style)
+		setWidgets(prev => ({ ...prev, [rect.id]: rect }))
 	};
 
 	const addCircle = () => {
-		setEntities((prev) => ({
-			...prev,
-			[++counter]: {
-				id: counter,
-				type: 'circle',
-				payload: { x: 0, y: 0, radius: 50, color: '#000000' },
-			},
-		}));
+		const circle = new Circle(-50, 50, 50, style);
+		setWidgets(prev => ({ ...prev, [circle.id]: circle }))
 	};
 
 	return (
 		<>
 			<Tools onRectangle={addRectangle} onCircle={addCircle} />
-			<Canvas entities={entities} width={width} height={height} />
+			<Canvas widgets={widgets} width={width} height={height} />
 		</>
 	);
 };

@@ -1,84 +1,39 @@
-import { useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
-import type { Entities } from '../types/entities';
+import { CanvasRenderer } from '../entities/renderers/CanvasRenderer';
+import type { Widget } from '../entities/widgets/Widget';
 
 type Props = {
 	width: number;
 	height: number;
-	entities: Entities;
+	widgets: Record<string, Widget>;
 };
 
-export const Canvas = ({ width, height, entities }: Props) => {
-	const ref = useRef<HTMLCanvasElement>(null);
-
-	const centerX = width / 2;
-	const centerY = height / 2;
-
-	const draw = () => {
-		if (!ref.current) return;
-
-		const ctx = ref.current.getContext('2d');
-
-		if (!ctx) return;
-
-		for (const id in entities) {
-			const entity = entities[id];
-
-			switch (entity.type) {
-				case 'rectangle': {
-					const { x, y, width, height, color } = entity.payload;
-
-					ctx.beginPath();
-					ctx.rect(centerX + x, centerY - y, width, height);
-
-					if (color) {
-						ctx.fillStyle = color;
-						ctx.fill();
-					}
-
-					break;
-				}
-				case 'circle': {
-					const { x, y, radius, color } = entity.payload;
-
-					ctx.beginPath();
-					ctx.arc(
-						centerX + x,
-						centerY - y,
-						radius,
-						0,
-						2 * Math.PI,
-						false,
-					);
-
-					if (color) {
-						ctx.fillStyle = color;
-						ctx.fill();
-					}
-
-					break;
-				}
-				default: {
-					throw new Error('Unknown entity type found!');
-				}
-			}
-		}
-	};
-
-	const onMount = () => {
-		draw();
-	};
+export const Canvas = ({ width, height, widgets }: Props) => {
+	const [renderer, setRenderer] = useState<CanvasRenderer | null>(null)
 
 	useEffect(() => {
-		draw();
-	});
+		if (!renderer) return;
+		renderer.setWidth(width)
+		renderer.setHeight(height);
+	}, [renderer, width, height])
+
+	const onRef = (el: HTMLCanvasElement | null) => {
+		if (!el) return;
+		const ctx = el.getContext('2d');
+		if (!ctx) return;
+		setRenderer(new CanvasRenderer(ctx, width, height))
+	}
+
+	if (renderer) {
+		for (const id in widgets) {
+			widgets[id].accept(renderer)
+		}
+	}
 
 	return (
 		<canvas
-			ref={(r) => {
-				ref.current = r;
-				onMount();
-			}}
+			ref={onRef}
 			width={width}
 			height={height}
 			style={{ display: 'block' }}
