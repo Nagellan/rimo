@@ -1,18 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { CanvasRenderer } from '../entities/renderers/CanvasRenderer';
 import type { Widget } from '../entities/widgets/Widget';
-import { useCanvasMove } from './useCanvasMove';
 
 type Props = {
+	widgets: Record<string, Widget>;
 	width: number;
 	height: number;
-	widgets: Record<string, Widget>;
+	x: number;
+	y: number;
+	onMove: (
+		startX: number,
+		startY: number,
+		endX: number,
+		endY: number,
+	) => void;
 };
 
-export const Canvas = ({ width, height, widgets }: Props) => {
-	const [x, setX] = useState(0);
-	const [y, setY] = useState(0);
+export const Canvas = ({ widgets, width, height, x, y, onMove }: Props) => {
 	const [renderer, setRenderer] = useState<CanvasRenderer | null>(null);
 
 	useEffect(() => {
@@ -26,11 +31,6 @@ export const Canvas = ({ width, height, widgets }: Props) => {
 		renderer.setWidth(width);
 		renderer.setHeight(height);
 	}, [renderer, width, height]);
-
-	const { onMouseDown, onMouseUp } = useCanvasMove((deltaX, deltaY) => {
-		setX((prev) => prev + deltaX);
-		setY((prev) => prev + deltaY);
-	});
 
 	const onRef = (el: HTMLCanvasElement | null) => {
 		if (!el) return;
@@ -46,14 +46,24 @@ export const Canvas = ({ width, height, widgets }: Props) => {
 		}
 	}
 
+	const startXRef = useRef(0);
+	const startYRef = useRef(0);
+
 	return (
 		<canvas
 			ref={onRef}
 			width={width}
 			height={height}
 			style={{ display: 'block' }}
-			onMouseDown={onMouseDown}
-			onMouseUp={onMouseUp}
+			onMouseDown={(event) => {
+				startXRef.current = event.nativeEvent.offsetX - (width / 2 + x);
+				startYRef.current = height / 2 - y - event.nativeEvent.offsetY;
+			}}
+			onMouseUp={(event) => {
+				const endX = event.nativeEvent.offsetX - (width / 2 + x);
+				const endY = height / 2 - y - event.nativeEvent.offsetY;
+				onMove(startXRef.current, startYRef.current, endX, endY);
+			}}
 		/>
 	);
 };

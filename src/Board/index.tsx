@@ -13,6 +13,9 @@ const style = new Style().fill('#ffffff').stroke('#000000', 1);
 export const Board = () => {
 	const { width, height } = useWindowSize();
 
+	const [x, setX] = useState(0);
+	const [y, setY] = useState(0);
+
 	const [widgets, setWidgets] = useState<Record<string, Widget>>(() => ({}));
 
 	const addRectangle = () => {
@@ -25,10 +28,53 @@ export const Board = () => {
 		setWidgets((prev) => ({ ...prev, [circle.id]: circle }));
 	};
 
+	const onMove = (
+		startX: number,
+		startY: number,
+		endX: number,
+		endY: number,
+	) => {
+		let widget: Widget | null = null;
+
+		for (const id in widgets) {
+			const { x, y, width, height } = widgets[id];
+			if (
+				startX >= x &&
+				startX <= x + width &&
+				startY >= y - height &&
+				startY <= y
+			) {
+				widget = widgets[id];
+				break;
+			}
+		}
+
+		if (widget) {
+			const newWidget = widget.clone();
+			newWidget.x = endX - newWidget.width / 2;
+			newWidget.y = endY + newWidget.height / 2;
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			setWidgets(({ [widget.id]: _, ...rest }) => ({
+				...rest,
+				[newWidget.id]: newWidget,
+			}));
+		} else {
+			setX((prev) => prev + endX - startX);
+			setY((prev) => prev + endY - startY);
+		}
+	};
+
 	return (
 		<>
 			<Tools onRectangle={addRectangle} onCircle={addCircle} />
-			<Canvas widgets={widgets} width={width} height={height} />
+			<Canvas
+				widgets={widgets}
+				width={width}
+				height={height}
+				x={x}
+				y={y}
+				onMove={onMove}
+			/>
 		</>
 	);
 };

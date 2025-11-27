@@ -28,4 +28,28 @@ export class Style {
 
 		return this;
 	}
+
+	public clone(): Style {
+		const newStyle = new Style();
+		if (this.fillColor) {
+			newStyle.fill(this.fillColor);
+		}
+		if (this.strokeColor && this.strokeWidth) {
+			newStyle.stroke(this.strokeColor, this.strokeWidth);
+		}
+		if (
+			this.shadowColor &&
+			this.shadowBlur &&
+			this.shadowOffsetX &&
+			this.shadowOffsetY
+		) {
+			newStyle.shadow(
+				this.shadowColor,
+				this.shadowBlur,
+				this.shadowOffsetX,
+				this.shadowOffsetY,
+			);
+		}
+		return newStyle;
+	}
 }

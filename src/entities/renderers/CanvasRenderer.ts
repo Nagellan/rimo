@@ -85,7 +85,7 @@ export class CanvasRenderer implements Renderer {
 		this.ctx.beginPath();
 		this.ctx.rect(
 			this.centerX + x + this.x,
-			this.centerY - y + this.y,
+			this.centerY - y - this.y,
 			width,
 			height,
 		);
@@ -99,7 +99,7 @@ export class CanvasRenderer implements Renderer {
 		this.ctx.beginPath();
 		this.ctx.arc(
 			this.centerX + x + radius + this.x,
-			this.centerY - y + radius + this.y,
+			this.centerY - y + radius - this.y,
 			radius,
 			0,
 			2 * Math.PI,

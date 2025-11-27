@@ -3,9 +3,6 @@ import type { Style } from '../styles/Style';
 import { Widget } from './Widget';
 
 export class Rectangle extends Widget {
-	public width: number;
-	public height: number;
-
 	constructor(
 		x: number,
 		y: number,
@@ -13,12 +10,20 @@ export class Rectangle extends Widget {
 		height: number,
 		style: Style,
 	) {
-		super(x, y, style);
-		this.width = width;
-		this.height = height;
+		super(x, y, width, height, style);
 	}
 
-	accept(renderer: Renderer) {
+	public accept(renderer: Renderer) {
 		renderer.drawRectangle(this);
+	}
+
+	public clone() {
+		return new Rectangle(
+			this.x,
+			this.y,
+			this.width,
+			this.height,
+			this.style.clone(),
+		);
 	}
 }
