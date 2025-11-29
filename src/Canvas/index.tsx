@@ -56,12 +56,16 @@ export const Canvas = ({ widgets, width, height, x, y, onMove }: Props) => {
 			height={height}
 			style={{ display: 'block' }}
 			onMouseDown={(event) => {
-				startXRef.current = event.nativeEvent.offsetX - (width / 2 + x);
-				startYRef.current = height / 2 - y - event.nativeEvent.offsetY;
+				startXRef.current =
+					event.nativeEvent.offsetX - (Math.floor(width / 2) + x);
+				startYRef.current =
+					Math.floor(height / 2) - y - event.nativeEvent.offsetY;
 			}}
 			onMouseUp={(event) => {
-				const endX = event.nativeEvent.offsetX - (width / 2 + x);
-				const endY = height / 2 - y - event.nativeEvent.offsetY;
+				const endX =
+					event.nativeEvent.offsetX - (Math.floor(width / 2) + x);
+				const endY =
+					Math.floor(height / 2) - y - event.nativeEvent.offsetY;
 				onMove(startXRef.current, startYRef.current, endX, endY);
 			}}
 		/>

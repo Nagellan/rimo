@@ -45,11 +45,11 @@ export class CanvasRenderer implements Renderer {
 	}
 
 	private get centerX() {
-		return this.width / 2;
+		return Math.floor(this.width / 2);
 	}
 
 	private get centerY() {
-		return this.height / 2;
+		return Math.floor(this.height / 2);
 	}
 
 	clear() {
