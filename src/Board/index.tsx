@@ -7,11 +7,13 @@ import { Rectangle } from '../entities/widgets/Rectangle';
 import { Circle } from '../entities/widgets/Circle';
 import { Style } from '../entities/styles/Style';
 import { useWindowSize } from './useWindowSize';
+import { useDevicePixelRatio } from './useDevicePixelRatio';
 
 const style = new Style().fill('#ffffff').stroke('#000000', 1);
 
 export const Board = () => {
 	const { width, height } = useWindowSize();
+	const dpr = useDevicePixelRatio();
 
 	const [x, setX] = useState(0);
 	const [y, setY] = useState(0);
@@ -67,6 +69,7 @@ export const Board = () => {
 				height={height}
 				x={x}
 				y={y}
+				dpr={dpr}
 				onMove={onMove}
 			/>
 		</>

@@ -12,12 +12,15 @@ export class CanvasRenderer implements Renderer {
 	private x: number;
 	private y: number;
 
+	private dpr: number;
+
 	constructor(
 		ctx: CanvasRenderingContext2D,
 		width: number,
 		height: number,
 		x: number,
 		y: number,
+		dpr = 1,
 	) {
 		this.ctx = ctx;
 
@@ -26,6 +29,18 @@ export class CanvasRenderer implements Renderer {
 
 		this.x = x;
 		this.y = y;
+
+		this.dpr = dpr;
+
+		this.setup();
+	}
+
+	private setup() {
+		this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+	}
+
+	public setDpr(dpr: number) {
+		this.dpr = dpr;
 	}
 
 	public setWidth(width: number) {

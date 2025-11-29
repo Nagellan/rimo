@@ -9,6 +9,7 @@ type Props = {
 	height: number;
 	x: number;
 	y: number;
+	dpr: number;
 	onMove: (
 		startX: number,
 		startY: number,
@@ -17,7 +18,15 @@ type Props = {
 	) => void;
 };
 
-export const Canvas = ({ widgets, width, height, x, y, onMove }: Props) => {
+export const Canvas = ({
+	widgets,
+	width,
+	height,
+	x,
+	y,
+	dpr,
+	onMove,
+}: Props) => {
 	const [renderer, setRenderer] = useState<CanvasRenderer | null>(null);
 
 	useEffect(() => {
@@ -32,11 +41,16 @@ export const Canvas = ({ widgets, width, height, x, y, onMove }: Props) => {
 		renderer.setHeight(height);
 	}, [renderer, width, height]);
 
+	useEffect(() => {
+		if (!renderer) return;
+		renderer.setDpr(dpr);
+	}, [renderer, dpr]);
+
 	const onRef = (el: HTMLCanvasElement | null) => {
 		if (!el) return;
 		const ctx = el.getContext('2d');
 		if (!ctx) return;
-		setRenderer(new CanvasRenderer(ctx, width, height, x, y));
+		setRenderer(new CanvasRenderer(ctx, width, height, x, y, dpr));
 	};
 
 	if (renderer) {
@@ -52,9 +66,13 @@ export const Canvas = ({ widgets, width, height, x, y, onMove }: Props) => {
 	return (
 		<canvas
 			ref={onRef}
-			width={width}
-			height={height}
-			style={{ display: 'block' }}
+			width={width * dpr}
+			height={height * dpr}
+			style={{
+				display: 'block',
+				width: `${width}px`,
+				height: `${height}px`,
+			}}
 			onMouseDown={(event) => {
 				startXRef.current =
 					event.nativeEvent.offsetX - (Math.floor(width / 2) + x);
