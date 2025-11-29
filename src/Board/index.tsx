@@ -49,9 +49,8 @@ export const Board = () => {
 			const newWidget = widget.clone();
 			newWidget.x = endX - (startX - widget.x);
 			newWidget.y = endY - (startY - widget.y);
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			setWidgets(({ [widget.id]: _, ...rest }) => ({
-				...rest,
+			setWidgets((prev) => ({
+				...prev,
 				[newWidget.id]: newWidget,
 			}));
 		} else {

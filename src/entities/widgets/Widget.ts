@@ -25,7 +25,12 @@ export abstract class Widget {
 		this.style = style;
 	}
 
+	public clone(): Widget {
+		const clone = Object.create(Object.getPrototypeOf(this));
+		Object.assign(clone, this);
+		return clone;
+	}
+
 	public abstract accept(renderer: Renderer): void;
-	public abstract clone(): Widget;
 	public abstract containsPoint(x: number, y: number): boolean;
 }

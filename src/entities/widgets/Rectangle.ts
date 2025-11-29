@@ -17,16 +17,6 @@ export class Rectangle extends Widget {
 		renderer.drawRectangle(this);
 	}
 
-	public clone() {
-		return new Rectangle(
-			this.x,
-			this.y,
-			this.width,
-			this.height,
-			this.style.clone(),
-		);
-	}
-
 	public containsPoint(x: number, y: number): boolean {
 		return (
 			x >= this.x &&
