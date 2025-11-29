@@ -9,8 +9,8 @@ export class CanvasRenderer implements Renderer {
 	private width: number;
 	private height: number;
 
-	private x: number;
-	private y: number;
+	private viewportX: number;
+	private viewportY: number;
 
 	private dpr: number;
 
@@ -18,8 +18,8 @@ export class CanvasRenderer implements Renderer {
 		ctx: CanvasRenderingContext2D,
 		width: number,
 		height: number,
-		x: number,
-		y: number,
+		viewportX: number,
+		viewportY: number,
 		dpr = 1,
 	) {
 		this.ctx = ctx;
@@ -27,8 +27,8 @@ export class CanvasRenderer implements Renderer {
 		this.width = width;
 		this.height = height;
 
-		this.x = x;
-		this.y = y;
+		this.viewportX = viewportX;
+		this.viewportY = viewportY;
 
 		this.dpr = dpr;
 
@@ -51,12 +51,12 @@ export class CanvasRenderer implements Renderer {
 		this.height = height;
 	}
 
-	public setX(x: number) {
-		this.x = x;
+	public setViewportX(viewportX: number) {
+		this.viewportX = viewportX;
 	}
 
-	public setY(y: number) {
-		this.y = y;
+	public setViewportY(viewportY: number) {
+		this.viewportY = viewportY;
 	}
 
 	private get centerX() {
@@ -99,8 +99,8 @@ export class CanvasRenderer implements Renderer {
 
 		this.ctx.beginPath();
 		this.ctx.rect(
-			this.centerX + x + this.x,
-			this.centerY - y - this.y,
+			this.centerX + x + this.viewportX,
+			this.centerY - y - this.viewportY,
 			width,
 			height,
 		);
@@ -113,8 +113,8 @@ export class CanvasRenderer implements Renderer {
 
 		this.ctx.beginPath();
 		this.ctx.arc(
-			this.centerX + x + radius + this.x,
-			this.centerY - y + radius - this.y,
+			this.centerX + x + radius + this.viewportX,
+			this.centerY - y + radius - this.viewportY,
 			radius,
 			0,
 			2 * Math.PI,

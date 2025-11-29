@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 import { CanvasRenderer } from '../entities/renderers/CanvasRenderer';
 import type { Widget } from '../entities/widgets/Widget';
@@ -7,33 +7,37 @@ type Props = {
 	widgets: Record<string, Widget>;
 	width: number;
 	height: number;
-	x: number;
-	y: number;
+	viewportX: number;
+	viewportY: number;
 	dpr: number;
-	onMove: (
-		startX: number,
-		startY: number,
-		endX: number,
-		endY: number,
+	onMoveStart: (
+		x: number,
+		y: number,
+		offsetX: number,
+		offsetY: number,
 	) => void;
+	onMoving: (x: number, y: number, offsetX: number, offsetY: number) => void;
+	onMoveEnd: (x: number, y: number, offsetX: number, offsetY: number) => void;
 };
 
 export const Canvas = ({
 	widgets,
 	width,
 	height,
-	x,
-	y,
+	viewportX,
+	viewportY,
 	dpr,
-	onMove,
+	onMoveStart,
+	onMoving,
+	onMoveEnd,
 }: Props) => {
 	const [renderer, setRenderer] = useState<CanvasRenderer | null>(null);
 
 	useEffect(() => {
 		if (!renderer) return;
-		renderer.setX(x);
-		renderer.setY(y);
-	}, [renderer, x, y]);
+		renderer.setViewportX(viewportX);
+		renderer.setViewportY(viewportY);
+	}, [renderer, viewportX, viewportY]);
 
 	useEffect(() => {
 		if (!renderer) return;
@@ -50,7 +54,16 @@ export const Canvas = ({
 		if (!el) return;
 		const ctx = el.getContext('2d');
 		if (!ctx) return;
-		setRenderer(new CanvasRenderer(ctx, width, height, x, y, dpr));
+		setRenderer(
+			new CanvasRenderer(ctx, width, height, viewportX, viewportY, dpr),
+		);
+	};
+
+	const getCenteredCoordinates = (x: number, y: number): [number, number] => {
+		return [
+			x - (Math.floor(width / 2) + viewportX),
+			Math.floor(height / 2) - viewportY - y,
+		];
 	};
 
 	if (renderer) {
@@ -60,8 +73,7 @@ export const Canvas = ({
 		}
 	}
 
-	const startXRef = useRef(0);
-	const startYRef = useRef(0);
+	const [moving, setMoving] = useState(false);
 
 	return (
 		<canvas
@@ -74,17 +86,37 @@ export const Canvas = ({
 				height: `${height}px`,
 			}}
 			onMouseDown={(event) => {
-				startXRef.current =
-					event.nativeEvent.offsetX - (Math.floor(width / 2) + x);
-				startYRef.current =
-					Math.floor(height / 2) - y - event.nativeEvent.offsetY;
+				setMoving(true);
+				onMoveStart(
+					...getCenteredCoordinates(
+						event.nativeEvent.offsetX,
+						event.nativeEvent.offsetY,
+					),
+					event.nativeEvent.offsetX,
+					event.nativeEvent.offsetY,
+				);
+			}}
+			onMouseMove={(event) => {
+				if (!moving) return;
+				onMoving(
+					...getCenteredCoordinates(
+						event.nativeEvent.offsetX,
+						event.nativeEvent.offsetY,
+					),
+					event.nativeEvent.offsetX,
+					event.nativeEvent.offsetY,
+				);
 			}}
 			onMouseUp={(event) => {
-				const endX =
-					event.nativeEvent.offsetX - (Math.floor(width / 2) + x);
-				const endY =
-					Math.floor(height / 2) - y - event.nativeEvent.offsetY;
-				onMove(startXRef.current, startYRef.current, endX, endY);
+				setMoving(false);
+				onMoveEnd(
+					...getCenteredCoordinates(
+						event.nativeEvent.offsetX,
+						event.nativeEvent.offsetY,
+					),
+					event.nativeEvent.offsetX,
+					event.nativeEvent.offsetY,
+				);
 			}}
 		/>
 	);

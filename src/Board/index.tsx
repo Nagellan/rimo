@@ -15,8 +15,8 @@ export const Board = () => {
 	const { width, height } = useWindowSize();
 	const dpr = useDevicePixelRatio();
 
-	const [x, setX] = useState(0);
-	const [y, setY] = useState(0);
+	const [viewportX, setViewportX] = useState(0);
+	const [viewportY, setViewportY] = useState(0);
 
 	const [widgets, setWidgets] = useState<Record<string, Widget>>(() => ({}));
 
@@ -30,33 +30,57 @@ export const Board = () => {
 		setWidgets((prev) => ({ ...prev, [circle.id]: circle }));
 	};
 
-	const onMove = (
-		startX: number,
-		startY: number,
-		endX: number,
-		endY: number,
-	) => {
-		let widget: Widget | null = null;
+	const [movingWidgetId, setMovingWidgetId] = useState<string | null>(null);
+	const [movingCursorX, setMovingCursorX] = useState(0);
+	const [movingCursorY, setMovingCursorY] = useState(0);
 
+	const [deltaX, setDeltaX] = useState(0);
+	const [deltaY, setDeltaY] = useState(0);
+
+	const onMoveStart = (
+		x: number,
+		y: number,
+		offsetX: number,
+		offsetY: number,
+	) => {
 		for (const id in widgets) {
-			if (widgets[id].containsPoint(startX, startY)) {
-				widget = widgets[id];
+			if (widgets[id].containsPoint(x, y)) {
+				setMovingWidgetId(id);
+				setMovingCursorX(widgets[id].x - x);
+				setMovingCursorY(widgets[id].y - y);
 				break;
 			}
 		}
 
-		if (widget) {
+		if (!movingWidgetId) {
+			setDeltaX(viewportX + Math.floor(width / 2) - offsetX);
+			setDeltaY(Math.floor(height / 2) - viewportY - offsetY);
+		}
+	};
+
+	const onMoving = (
+		x: number,
+		y: number,
+		offsetX: number,
+		offsetY: number,
+	) => {
+		if (!movingWidgetId) {
+			setViewportX(offsetX + deltaX - Math.floor(width / 2));
+			setViewportY(Math.floor(height / 2) - offsetY - deltaY);
+		} else {
+			const widget = widgets[movingWidgetId];
 			const newWidget = widget.clone();
-			newWidget.x = endX - (startX - widget.x);
-			newWidget.y = endY - (startY - widget.y);
+			newWidget.x = x + movingCursorX;
+			newWidget.y = y + movingCursorY;
 			setWidgets((prev) => ({
 				...prev,
 				[newWidget.id]: newWidget,
 			}));
-		} else {
-			setX((prev) => prev + endX - startX);
-			setY((prev) => prev + endY - startY);
 		}
+	};
+
+	const onMoveEnd = () => {
+		setMovingWidgetId(null);
 	};
 
 	return (
@@ -66,10 +90,12 @@ export const Board = () => {
 				widgets={widgets}
 				width={width}
 				height={height}
-				x={x}
-				y={y}
+				viewportX={viewportX}
+				viewportY={viewportY}
 				dpr={dpr}
-				onMove={onMove}
+				onMoveStart={onMoveStart}
+				onMoving={onMoving}
+				onMoveEnd={onMoveEnd}
 			/>
 		</>
 	);
