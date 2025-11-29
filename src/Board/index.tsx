@@ -21,12 +21,18 @@ export const Board = () => {
 	const [widgets, setWidgets] = useState<Record<string, Widget>>(() => ({}));
 
 	const addRectangle = () => {
-		const rect = new Rectangle(-50, 25, 100, 50, style);
+		const rect = new Rectangle(
+			-50 - viewportX,
+			25 - viewportY,
+			100,
+			50,
+			style,
+		);
 		setWidgets((prev) => ({ ...prev, [rect.id]: rect }));
 	};
 
 	const addCircle = () => {
-		const circle = new Circle(-50, 50, 50, style);
+		const circle = new Circle(-50 - viewportX, 50 - viewportY, 50, style);
 		setWidgets((prev) => ({ ...prev, [circle.id]: circle }));
 	};
 
