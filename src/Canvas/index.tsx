@@ -82,7 +82,7 @@ export const Canvas = ({
 				width: `${width}px`,
 				height: `${height}px`,
 			}}
-			onMouseDown={(event) => {
+			onPointerDown={(event) => {
 				setMoving(true);
 				onMoveStart(
 					...getCenteredCoordinates(
@@ -93,7 +93,7 @@ export const Canvas = ({
 					event.nativeEvent.offsetY,
 				);
 			}}
-			onMouseMove={(event) => {
+			onPointerMove={(event) => {
 				if (!moving) return;
 				onMoving(
 					...getCenteredCoordinates(
@@ -104,7 +104,7 @@ export const Canvas = ({
 					event.nativeEvent.offsetY,
 				);
 			}}
-			onMouseUp={(event) => {
+			onPointerUp={(event) => {
 				setMoving(false);
 				onMoveEnd(
 					...getCenteredCoordinates(
