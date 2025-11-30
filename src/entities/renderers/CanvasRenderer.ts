@@ -72,6 +72,37 @@ export class CanvasRenderer implements Renderer {
 	public clear() {
 		this.ctx.fillStyle = '#f3f3f3';
 		this.ctx.fillRect(0, 0, this.width, this.height);
+		this.drawGrid();
+	}
+
+	public drawGrid() {
+		const span = 20;
+		this.ctx.fillStyle = '#c7c7c7';
+
+		// Compute visible world-space bounds for the canvas
+		const worldXMin = -this.centerX - this.viewportX;
+		const worldXMax = this.width - this.centerX - this.viewportX;
+
+		const worldYMax = this.centerY - this.viewportY; // top of screen in world coords
+		const worldYMin = this.centerY - this.height - this.viewportY; // bottom of screen in world coords
+
+		// Determine which grid indices (multiples of span) intersect the view
+		const kxMin = Math.floor(worldXMin / span) - 1;
+		const kxMax = Math.ceil(worldXMax / span) + 1;
+		const kyMin = Math.floor(worldYMin / span) - 1;
+		const kyMax = Math.ceil(worldYMax / span) + 1;
+
+		for (let kx = kxMin; kx <= kxMax; kx++) {
+			const worldX = kx * span;
+			const screenX = this.centerX + worldX + this.viewportX + 0.5;
+			for (let ky = kyMin; ky <= kyMax; ky++) {
+				const worldY = ky * span;
+				const screenY = this.centerY - worldY - this.viewportY + 0.5;
+				this.ctx.beginPath();
+				this.ctx.arc(screenX, screenY, 1.5, 0, Math.PI * 2, true);
+				this.ctx.fill();
+			}
+		}
 	}
 
 	public applyStyle(style: Style) {
