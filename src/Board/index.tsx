@@ -117,6 +117,10 @@ export const Board = () => {
 					});
 					break;
 				}
+				case 'Escape': {
+					setSelectedWidgetIds([]);
+					break;
+				}
 			}
 		};
 		document.addEventListener('keydown', onKeyDown);
