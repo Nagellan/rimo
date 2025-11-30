@@ -1,6 +1,7 @@
-import type { Rectangle } from '../widgets/Rectangle';
-import type { Circle } from '../widgets/Circle';
-import type { Style } from '../styles/Style';
+import type { Widget } from '../widgets/Widget';
+import { Rectangle } from '../widgets/Rectangle';
+import { Circle } from '../widgets/Circle';
+import { Style } from '../styles/Style';
 import type { Renderer } from './Renderer';
 
 export class CanvasRenderer implements Renderer {
@@ -67,15 +68,16 @@ export class CanvasRenderer implements Renderer {
 		return Math.floor(this.height / 2);
 	}
 
-	clear() {
+	public clear() {
 		this.ctx.clearRect(0, 0, this.width, this.height);
 	}
 
-	applyStyle(style: Style) {
+	public applyStyle(style: Style) {
 		const {
 			fillColor,
 			strokeColor,
 			strokeWidth,
+			strokeLineDash,
 			shadowColor,
 			shadowBlur,
 			shadowOffsetX,
@@ -85,6 +87,7 @@ export class CanvasRenderer implements Renderer {
 		if (fillColor) this.ctx.fillStyle = fillColor;
 		if (strokeColor) this.ctx.strokeStyle = strokeColor;
 		if (strokeWidth) this.ctx.lineWidth = strokeWidth;
+		if (strokeLineDash) this.ctx.setLineDash(strokeLineDash);
 		if (shadowColor) this.ctx.shadowColor = shadowColor;
 		if (shadowBlur) this.ctx.shadowBlur = shadowBlur;
 		if (shadowOffsetX) this.ctx.shadowOffsetX = shadowOffsetX;
@@ -94,7 +97,7 @@ export class CanvasRenderer implements Renderer {
 		if (strokeColor && strokeWidth) this.ctx.stroke();
 	}
 
-	drawRectangle(rectangle: Rectangle) {
+	public drawRectangle(rectangle: Rectangle) {
 		const { x, y, width, height, style } = rectangle;
 
 		this.ctx.beginPath();
@@ -108,7 +111,7 @@ export class CanvasRenderer implements Renderer {
 		this.applyStyle(style);
 	}
 
-	drawCircle(circle: Circle) {
+	public drawCircle(circle: Circle) {
 		const { x, y, radius, style } = circle;
 
 		this.ctx.beginPath();
@@ -122,5 +125,18 @@ export class CanvasRenderer implements Renderer {
 		);
 
 		this.applyStyle(style);
+	}
+
+	public select(widget: Widget) {
+		const padding = 4;
+		const style = new Style().stroke('blue', 1, [4, 4]);
+		const rect = new Rectangle(
+			widget.x - padding,
+			widget.y + padding,
+			widget.width + 2 * padding,
+			widget.height + 2 * padding,
+			style,
+		);
+		this.drawRectangle(rect);
 	}
 }

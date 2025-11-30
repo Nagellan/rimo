@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { CanvasRenderer } from '../entities/renderers/CanvasRenderer';
 import type { Widget } from '../entities/widgets/Widget';
 
 type Props = {
 	widgets: Record<string, Widget>;
+	selectedWidgetIds: string[];
 	width: number;
 	height: number;
 	viewportX: number;
@@ -18,10 +19,12 @@ type Props = {
 	) => void;
 	onMoving: (x: number, y: number, offsetX: number, offsetY: number) => void;
 	onMoveEnd: (x: number, y: number, offsetX: number, offsetY: number) => void;
+	onClick: (x: number, y: number, offsetX: number, offsetY: number) => void;
 };
 
 export const Canvas = ({
 	widgets,
+	selectedWidgetIds,
 	width,
 	height,
 	viewportX,
@@ -30,25 +33,9 @@ export const Canvas = ({
 	onMoveStart,
 	onMoving,
 	onMoveEnd,
+	onClick,
 }: Props) => {
 	const [renderer, setRenderer] = useState<CanvasRenderer | null>(null);
-
-	useEffect(() => {
-		if (!renderer) return;
-		renderer.setViewportX(viewportX);
-		renderer.setViewportY(viewportY);
-	}, [renderer, viewportX, viewportY]);
-
-	useEffect(() => {
-		if (!renderer) return;
-		renderer.setWidth(width);
-		renderer.setHeight(height);
-	}, [renderer, width, height]);
-
-	useEffect(() => {
-		if (!renderer) return;
-		renderer.setDpr(dpr);
-	}, [renderer, dpr]);
 
 	const onRef = (el: HTMLCanvasElement | null) => {
 		if (!el) return;
@@ -67,9 +54,19 @@ export const Canvas = ({
 	};
 
 	if (renderer) {
+		renderer.setViewportX(viewportX);
+		renderer.setViewportY(viewportY);
+		renderer.setWidth(width);
+		renderer.setHeight(height);
+		renderer.setDpr(dpr);
+
 		renderer.clear();
 		for (const id in widgets) {
-			widgets[id].accept(renderer);
+			const widget = widgets[id];
+			widget.accept(renderer);
+			if (selectedWidgetIds.includes(id)) {
+				renderer.select(widget);
+			}
 		}
 	}
 
@@ -110,6 +107,16 @@ export const Canvas = ({
 			onMouseUp={(event) => {
 				setMoving(false);
 				onMoveEnd(
+					...getCenteredCoordinates(
+						event.nativeEvent.offsetX,
+						event.nativeEvent.offsetY,
+					),
+					event.nativeEvent.offsetX,
+					event.nativeEvent.offsetY,
+				);
+			}}
+			onClick={(event) => {
+				onClick(
 					...getCenteredCoordinates(
 						event.nativeEvent.offsetX,
 						event.nativeEvent.offsetY,

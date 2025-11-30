@@ -89,11 +89,27 @@ export const Board = () => {
 		setMovingWidgetId(null);
 	};
 
+	const [selectedWidgetIds, setSelectedWidgetIds] = useState<string[]>([]);
+
+	const onClick = (x: number, y: number) => {
+		const selected: string[] = [];
+
+		for (const id in widgets) {
+			if (widgets[id].containsPoint(x, y)) {
+				selected.push(id);
+				break;
+			}
+		}
+
+		setSelectedWidgetIds(selected);
+	};
+
 	return (
 		<>
 			<Tools onRectangle={addRectangle} onCircle={addCircle} />
 			<Canvas
 				widgets={widgets}
+				selectedWidgetIds={selectedWidgetIds}
 				width={width}
 				height={height}
 				viewportX={viewportX}
@@ -102,6 +118,7 @@ export const Board = () => {
 				onMoveStart={onMoveStart}
 				onMoving={onMoving}
 				onMoveEnd={onMoveEnd}
+				onClick={onClick}
 			/>
 		</>
 	);

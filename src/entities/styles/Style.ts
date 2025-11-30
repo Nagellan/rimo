@@ -2,6 +2,7 @@ export class Style {
 	public fillColor?: string;
 	public strokeColor?: string;
 	public strokeWidth?: number;
+	public strokeLineDash?: number[];
 	public shadowColor?: string;
 	public shadowBlur?: number;
 	public shadowOffsetX?: number;
@@ -13,9 +14,10 @@ export class Style {
 		return this;
 	}
 
-	public stroke(color: string, width = 1): this {
+	public stroke(color: string, width: number, lineDash: number[] = []): this {
 		this.strokeColor = color;
 		this.strokeWidth = width;
+		this.strokeLineDash = lineDash;
 
 		return this;
 	}
@@ -34,8 +36,12 @@ export class Style {
 		if (this.fillColor) {
 			newStyle.fill(this.fillColor);
 		}
-		if (this.strokeColor && this.strokeWidth) {
-			newStyle.stroke(this.strokeColor, this.strokeWidth);
+		if (this.strokeColor && this.strokeWidth && this.strokeLineDash) {
+			newStyle.stroke(
+				this.strokeColor,
+				this.strokeWidth,
+				this.strokeLineDash,
+			);
 		}
 		if (
 			this.shadowColor &&
