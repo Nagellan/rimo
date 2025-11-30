@@ -162,14 +162,45 @@ export class CanvasRenderer implements Renderer {
 
 	public select(widget: Widget) {
 		const padding = 4;
-		const style = new Style().stroke('blue', 1, [4, 4]);
+
 		const rect = new Rectangle(
 			widget.x - padding,
 			widget.y + padding,
 			widget.width + 2 * padding,
 			widget.height + 2 * padding,
-			style,
+			new Style().stroke('blue', 1, [4, 4]),
 		);
 		this.drawRectangle(rect);
+
+		const circleRadius = 3;
+		const circleStyle = new Style().fill('white').stroke('blue', 1);
+		const topLeftCircle = new Circle(
+			widget.x - padding - circleRadius,
+			widget.y + padding + circleRadius,
+			circleRadius,
+			circleStyle,
+		);
+		const topRightCircle = new Circle(
+			widget.x + widget.width + padding - circleRadius,
+			widget.y + padding + circleRadius,
+			circleRadius,
+			circleStyle,
+		);
+		const bottomRightCircle = new Circle(
+			widget.x + widget.width + padding - circleRadius,
+			widget.y - widget.height - padding + circleRadius,
+			circleRadius,
+			circleStyle,
+		);
+		const bottomLeftCircle = new Circle(
+			widget.x - padding - circleRadius,
+			widget.y - widget.height - padding + circleRadius,
+			circleRadius,
+			circleStyle,
+		);
+		this.drawCircle(topLeftCircle);
+		this.drawCircle(topRightCircle);
+		this.drawCircle(bottomRightCircle);
+		this.drawCircle(bottomLeftCircle);
 	}
 }
