@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Canvas } from '../Canvas';
 import { Tools } from '../Tools';
@@ -18,7 +18,7 @@ export const Board = () => {
 	const [viewportX, setViewportX] = useState(0);
 	const [viewportY, setViewportY] = useState(0);
 
-	const [widgets, setWidgets] = useState<Record<string, Widget>>(() => ({}));
+	const [widgets, setWidgets] = useState<Record<string, Widget>>({});
 
 	const addRectangle = () => {
 		const rect = new Rectangle(
@@ -103,6 +103,27 @@ export const Board = () => {
 
 		setSelectedWidgetIds(selected);
 	};
+
+	useEffect(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			switch (event.key) {
+				case 'Backspace': {
+					setWidgets((prev) => {
+						const next = { ...prev };
+						for (const id of selectedWidgetIds) {
+							delete next[id];
+						}
+						return next;
+					});
+					break;
+				}
+			}
+		};
+		document.addEventListener('keydown', onKeyDown);
+		return () => {
+			document.removeEventListener('keydown', onKeyDown);
+		};
+	}, [selectedWidgetIds]);
 
 	return (
 		<>
