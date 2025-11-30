@@ -34,6 +34,7 @@ export class CanvasRenderer implements Renderer {
 		this.dpr = dpr;
 
 		this.setup();
+		this.clear();
 	}
 
 	private setup() {
@@ -69,7 +70,8 @@ export class CanvasRenderer implements Renderer {
 	}
 
 	public clear() {
-		this.ctx.clearRect(0, 0, this.width, this.height);
+		this.ctx.fillStyle = '#f3f3f3';
+		this.ctx.fillRect(0, 0, this.width, this.height);
 	}
 
 	public applyStyle(style: Style) {
