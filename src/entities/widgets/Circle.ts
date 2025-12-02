@@ -34,6 +34,6 @@ export class Circle extends Widget {
 	}
 
 	public resize(width: number, height: number) {
-		this._radius = Math.min(width, height);
+		this._radius = Math.max(Math.floor(width / 2), Math.floor(height / 2));
 	}
 }

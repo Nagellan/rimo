@@ -72,6 +72,13 @@ export const Canvas = ({
 
 	const [moving, setMoving] = useState(false);
 	const [movingWidgetId, setMovingWidgetId] = useState<string | null>(null);
+	const [selectionCorner, setSelectionCorner] = useState<string | null>(null);
+	const [w, setW] = useState(0);
+	const [h, setH] = useState(0);
+	const [uX, setUX] = useState(0);
+	const [uY, setUY] = useState(0);
+	const [sX, setSX] = useState(0);
+	const [sY, setSY] = useState(0);
 
 	const { onViewportMoveStart, onViewportMoving, onViewportMoveEnd } =
 		useMoveViewport(viewportX, viewportY, width, height, (x, y) => {
@@ -124,6 +131,22 @@ export const Canvas = ({
 						);
 						break;
 					}
+					const selectionCorner = renderer?.getSelectionCorner(
+						x,
+						y,
+						widget,
+					);
+					if (selectionCorner) {
+						selected = id;
+						setSelectionCorner(selectionCorner);
+						setW(widget.width);
+						setH(widget.height);
+						setUX(widget.x);
+						setUY(widget.y);
+						setSX(x);
+						setSY(y);
+						break;
+					}
 				}
 				if (!selected) {
 					dispatch({
@@ -140,12 +163,51 @@ export const Canvas = ({
 			onPointerMove={(event) => {
 				if (!moving) return;
 				if (movingWidgetId) {
-					onWidgetMoving(
-						...getCenteredCoordinates(
+					if (selectionCorner) {
+						const [x, y] = getCenteredCoordinates(
 							event.nativeEvent.offsetX,
 							event.nativeEvent.offsetY,
-						),
-					);
+						);
+						let newX = widgets[movingWidgetId].x;
+						let newY = widgets[movingWidgetId].y;
+						let newWidth = widgets[movingWidgetId].width;
+						let newHeight = widgets[movingWidgetId].height;
+						if (selectionCorner === 'top-left') {
+							newX = uX + x - sX;
+							newY = uY + y - sY;
+							newWidth = w - x + sX;
+							newHeight = h - sY + y;
+						} else if (selectionCorner === 'top-right') {
+							newY = uY + y - sY;
+							newWidth = w + x - sX;
+							newHeight = h - sY + y;
+						} else if (selectionCorner === 'bottom-right') {
+							newWidth = w + x - sX;
+							newHeight = h + sY - y;
+						} else if (selectionCorner === 'bottom-left') {
+							newX = uX + x - sX;
+							newWidth = w - x + sX;
+							newHeight = h + sY - y;
+						}
+						if (newHeight < 40 || newWidth < 40) return;
+						dispatch({
+							type: EVENT.RESIZE_WIDGET,
+							payload: {
+								id: movingWidgetId,
+								x: newX,
+								y: newY,
+								width: newWidth,
+								height: newHeight,
+							},
+						});
+					} else {
+						onWidgetMoving(
+							...getCenteredCoordinates(
+								event.nativeEvent.offsetX,
+								event.nativeEvent.offsetY,
+							),
+						);
+					}
 				} else {
 					onViewportMoving(
 						event.nativeEvent.offsetX,
@@ -158,6 +220,13 @@ export const Canvas = ({
 				setMovingWidgetId(null);
 				onWidgetMoveEnd();
 				onViewportMoveEnd();
+				setSelectionCorner(null);
+				setW(0);
+				setH(0);
+				setUX(0);
+				setUY(0);
+				setSX(0);
+				setSY(0);
 			}}
 		/>
 	);
