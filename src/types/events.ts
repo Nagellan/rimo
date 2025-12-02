@@ -21,6 +21,7 @@ type SelectWidgetEvent = {
 	type: typeof EVENT.SELECT_WIDGET;
 	payload: {
 		id: string | null;
+		add?: boolean;
 	};
 };
 

@@ -21,9 +21,7 @@ export const Board = () => {
 	const [viewportY, setViewportY] = useState(0);
 
 	const [widgets, setWidgets] = useState<Record<string, Widget>>({});
-	const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(
-		null,
-	);
+	const [selectedWidgetIds, setSelectedWidgetIds] = useState<string[]>([]);
 
 	const addRectangle = () => {
 		const rect = new Rectangle(
@@ -61,8 +59,20 @@ export const Board = () => {
 				break;
 			}
 			case EVENT.SELECT_WIDGET: {
-				const { id } = event.payload;
-				setSelectedWidgetId(id);
+				const { id, add } = event.payload;
+				if (id === null) {
+					setSelectedWidgetIds([]);
+				} else {
+					if (add) {
+						setSelectedWidgetIds((prev) => {
+							if (prev.includes(id))
+								return prev.filter((_id) => _id !== id);
+							return [...prev, id];
+						});
+					} else {
+						setSelectedWidgetIds([id]);
+					}
+				}
 				break;
 			}
 			case EVENT.RESIZE_WIDGET: {
@@ -87,31 +97,42 @@ export const Board = () => {
 		const onKeyDown = (event: KeyboardEvent) => {
 			switch (event.key) {
 				case 'Backspace': {
-					if (!selectedWidgetId) break;
+					setSelectedWidgetIds([]);
 					setWidgets((prev) => {
 						const next = { ...prev };
-						delete next[selectedWidgetId];
+						for (const id of selectedWidgetIds) {
+							delete next[id];
+						}
 						return next;
 					});
 					break;
 				}
 				case 'Escape': {
-					setSelectedWidgetId(null);
+					setSelectedWidgetIds([]);
 					break;
 				}
 				case 'd': {
-					if (!selectedWidgetId || (!event.metaKey && !event.ctrlKey))
+					if (
+						!selectedWidgetIds.length ||
+						(!event.metaKey && !event.ctrlKey)
+					)
 						break;
-					const newWidget = widgets[selectedWidgetId].duplicate();
-					newWidget.reposition(
-						newWidget.x + newWidget.width + 20,
-						newWidget.y,
-					);
-					setWidgets((prev) => ({
-						...prev,
-						[newWidget.id]: newWidget,
-					}));
-					setSelectedWidgetId(newWidget.id);
+					const newWidgets = selectedWidgetIds.map((id) => {
+						const newWidget = widgets[id].duplicate();
+						newWidget.reposition(
+							newWidget.x + newWidget.width + 20,
+							newWidget.y,
+						);
+						return newWidget;
+					});
+					setWidgets((prev) => {
+						const next = { ...prev };
+						for (const widget of newWidgets) {
+							next[widget.id] = widget;
+						}
+						return next;
+					});
+					setSelectedWidgetIds(newWidgets.map((widget) => widget.id));
 					break;
 				}
 			}
@@ -120,14 +141,14 @@ export const Board = () => {
 		return () => {
 			document.removeEventListener('keydown', onKeyDown);
 		};
-	}, [selectedWidgetId, widgets]);
+	}, [selectedWidgetIds, widgets]);
 
 	return (
 		<>
 			<Tools onRectangle={addRectangle} onCircle={addCircle} />
 			<Canvas
 				widgets={widgets}
-				selectedWidgetId={selectedWidgetId}
+				selectedWidgetIds={selectedWidgetIds}
 				width={width}
 				height={height}
 				viewportX={viewportX}

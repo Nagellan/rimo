@@ -9,7 +9,7 @@ import { useMoveWidget } from './useMoveWidget';
 
 type Props = {
 	widgets: Record<string, Widget>;
-	selectedWidgetId: string | null;
+	selectedWidgetIds: string[];
 	width: number;
 	height: number;
 	viewportX: number;
@@ -20,7 +20,7 @@ type Props = {
 
 export const Canvas = ({
 	widgets,
-	selectedWidgetId,
+	selectedWidgetIds,
 	width,
 	height,
 	viewportX,
@@ -64,9 +64,10 @@ export const Canvas = ({
 		for (const id in widgets) {
 			const widget = widgets[id];
 			widget.accept(renderer);
-			if (id === selectedWidgetId) {
-				renderer.select(widget);
-			}
+		}
+		for (const id of selectedWidgetIds) {
+			const widget = widgets[id];
+			renderer.select(widget);
 		}
 	}
 
@@ -120,7 +121,7 @@ export const Canvas = ({
 						selected = id;
 						dispatch({
 							type: EVENT.SELECT_WIDGET,
-							payload: { id },
+							payload: { id, add: event.shiftKey },
 						});
 						onWidgetMoveStart(
 							widget,
