@@ -1,8 +1,12 @@
+import { isInsideCircle } from '../../utils/geometry';
 import type { Widget } from '../widgets/Widget';
 import { Rectangle } from '../widgets/Rectangle';
 import { Circle } from '../widgets/Circle';
 import { Style } from '../styles/Style';
 import type { Renderer } from './Renderer';
+
+const SELECTION_CIRCLE_RADIUS = 3;
+const SELECTION_PADDING = 4;
 
 export class CanvasRenderer implements Renderer {
 	private ctx: CanvasRenderingContext2D;
@@ -161,46 +165,103 @@ export class CanvasRenderer implements Renderer {
 	}
 
 	public select(widget: Widget) {
-		const padding = 4;
-
 		const rect = new Rectangle(
-			widget.x - padding,
-			widget.y + padding,
-			widget.width + 2 * padding,
-			widget.height + 2 * padding,
+			widget.x - SELECTION_PADDING,
+			widget.y + SELECTION_PADDING,
+			widget.width + 2 * SELECTION_PADDING,
+			widget.height + 2 * SELECTION_PADDING,
 			new Style().stroke('blue', 1, [4, 4]),
 		);
 		this.drawRectangle(rect);
 
-		const circleRadius = 3;
 		const circleStyle = new Style().fill('white').stroke('blue', 1);
 		const topLeftCircle = new Circle(
-			widget.x - padding - circleRadius,
-			widget.y + padding + circleRadius,
-			circleRadius,
-			circleStyle,
-		);
-		const topRightCircle = new Circle(
-			widget.x + widget.width + padding - circleRadius,
-			widget.y + padding + circleRadius,
-			circleRadius,
-			circleStyle,
-		);
-		const bottomRightCircle = new Circle(
-			widget.x + widget.width + padding - circleRadius,
-			widget.y - widget.height - padding + circleRadius,
-			circleRadius,
-			circleStyle,
-		);
-		const bottomLeftCircle = new Circle(
-			widget.x - padding - circleRadius,
-			widget.y - widget.height - padding + circleRadius,
-			circleRadius,
+			widget.x - SELECTION_PADDING - SELECTION_CIRCLE_RADIUS,
+			widget.y + SELECTION_PADDING + SELECTION_CIRCLE_RADIUS,
+			SELECTION_CIRCLE_RADIUS,
 			circleStyle,
 		);
 		this.drawCircle(topLeftCircle);
+		const topRightCircle = new Circle(
+			widget.x +
+				widget.width +
+				SELECTION_PADDING -
+				SELECTION_CIRCLE_RADIUS,
+			widget.y + SELECTION_PADDING + SELECTION_CIRCLE_RADIUS,
+			SELECTION_CIRCLE_RADIUS,
+			circleStyle,
+		);
 		this.drawCircle(topRightCircle);
+		const bottomRightCircle = new Circle(
+			widget.x +
+				widget.width +
+				SELECTION_PADDING -
+				SELECTION_CIRCLE_RADIUS,
+			widget.y -
+				widget.height -
+				SELECTION_PADDING +
+				SELECTION_CIRCLE_RADIUS,
+			SELECTION_CIRCLE_RADIUS,
+			circleStyle,
+		);
 		this.drawCircle(bottomRightCircle);
+		const bottomLeftCircle = new Circle(
+			widget.x - SELECTION_PADDING - SELECTION_CIRCLE_RADIUS,
+			widget.y -
+				widget.height -
+				SELECTION_PADDING +
+				SELECTION_CIRCLE_RADIUS,
+			SELECTION_CIRCLE_RADIUS,
+			circleStyle,
+		);
 		this.drawCircle(bottomLeftCircle);
+	}
+
+	public getSelectionCorner(x: number, y: number, widget: Widget) {
+		if (
+			isInsideCircle(
+				x,
+				y,
+				widget.x - SELECTION_PADDING,
+				widget.y + SELECTION_PADDING,
+				SELECTION_CIRCLE_RADIUS,
+			)
+		) {
+			return 'top-left';
+		}
+		if (
+			isInsideCircle(
+				x,
+				y,
+				widget.x + widget.width + SELECTION_PADDING,
+				widget.y + SELECTION_PADDING,
+				SELECTION_CIRCLE_RADIUS,
+			)
+		) {
+			return 'top-right';
+		}
+		if (
+			isInsideCircle(
+				x,
+				y,
+				widget.x + widget.width + SELECTION_PADDING,
+				widget.y - widget.height - SELECTION_PADDING,
+				SELECTION_CIRCLE_RADIUS,
+			)
+		) {
+			return 'bottom-right';
+		}
+		if (
+			isInsideCircle(
+				x,
+				y,
+				widget.x - SELECTION_PADDING,
+				widget.y - widget.height - SELECTION_PADDING,
+				SELECTION_CIRCLE_RADIUS,
+			)
+		) {
+			return 'bottom-left';
+		}
+		return null;
 	}
 }

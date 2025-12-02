@@ -53,8 +53,7 @@ export const Board = () => {
 				const { id, x, y } = event.payload;
 				const widget = widgets[id];
 				const newWidget = widget.clone();
-				newWidget.x = x;
-				newWidget.y = y;
+				newWidget.reposition(x, y);
 				setWidgets((prev) => ({
 					...prev,
 					[newWidget.id]: newWidget,
@@ -64,6 +63,18 @@ export const Board = () => {
 			case EVENT.SELECT_WIDGET: {
 				const { id } = event.payload;
 				setSelectedWidgetId(id);
+				break;
+			}
+			case EVENT.RESIZE_WIDGET: {
+				const { id, x, y, width, height } = event.payload;
+				const widget = widgets[id];
+				const newWidget = widget.clone();
+				newWidget.reposition(x, y);
+				newWidget.resize(width, height);
+				setWidgets((prev) => ({
+					...prev,
+					[newWidget.id]: newWidget,
+				}));
 				break;
 			}
 			default: {

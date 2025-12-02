@@ -24,6 +24,21 @@ type SelectWidgetEvent = {
 	};
 };
 
-export type Event = MoveViewportEvent | MoveWidgetEvent | SelectWidgetEvent;
+type ResizeWidgetEvent = {
+	type: typeof EVENT.RESIZE_WIDGET;
+	payload: {
+		id: string;
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	};
+};
+
+export type Event =
+	| MoveViewportEvent
+	| MoveWidgetEvent
+	| SelectWidgetEvent
+	| ResizeWidgetEvent;
 
 export type Dispatch = (event: Event) => void;

@@ -4,25 +4,31 @@ import type { Style } from '../styles/Style';
 
 export abstract class Widget {
 	public readonly id: string;
-	public x: number;
-	public y: number;
-	public width: number;
-	public height: number;
-	public style: Style;
+	protected _x: number;
+	protected _y: number;
+	protected _style: Style;
 
-	constructor(
-		x: number,
-		y: number,
-		width: number,
-		height: number,
-		style: Style,
-	) {
+	constructor(x: number, y: number, style: Style) {
 		this.id = nanoid();
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.style = style;
+		this._x = x;
+		this._y = y;
+		this._style = style;
+	}
+
+	public get x(): number {
+		return this._x;
+	}
+
+	public get y(): number {
+		return this._y;
+	}
+
+	public abstract get width(): number;
+
+	public abstract get height(): number;
+
+	public get style(): Style {
+		return this._style;
 	}
 
 	public clone(): Widget {
@@ -32,5 +38,13 @@ export abstract class Widget {
 	}
 
 	public abstract accept(renderer: Renderer): void;
+
 	public abstract containsPoint(x: number, y: number): boolean;
+
+	public abstract resize(width: number, height: number): void;
+
+	public reposition(x: number, y: number): void {
+		this._x = x;
+		this._y = y;
+	}
 }
