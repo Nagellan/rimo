@@ -26,6 +26,16 @@ export class Rectangle extends Widget {
 		return this._height;
 	}
 
+	public duplicate(): Rectangle {
+		return new Rectangle(
+			this.x,
+			this.y,
+			this.width,
+			this.height,
+			this.style.clone(),
+		);
+	}
+
 	public accept(renderer: Renderer): void {
 		renderer.drawRectangle(this);
 	}

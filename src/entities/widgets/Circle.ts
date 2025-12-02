@@ -23,6 +23,10 @@ export class Circle extends Widget {
 		return this.radius * 2;
 	}
 
+	public duplicate(): Circle {
+		return new Circle(this.x, this.y, this.radius, this.style.clone());
+	}
+
 	public accept(renderer: Renderer) {
 		renderer.drawCircle(this);
 	}

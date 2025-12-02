@@ -37,6 +37,8 @@ export abstract class Widget {
 		return clone;
 	}
 
+	public abstract duplicate(): Widget;
+
 	public abstract accept(renderer: Renderer): void;
 
 	public abstract containsPoint(x: number, y: number): boolean;

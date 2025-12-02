@@ -99,13 +99,28 @@ export const Board = () => {
 					setSelectedWidgetId(null);
 					break;
 				}
+				case 'd': {
+					if (!selectedWidgetId || (!event.metaKey && !event.ctrlKey))
+						break;
+					const newWidget = widgets[selectedWidgetId].duplicate();
+					newWidget.reposition(
+						newWidget.x + newWidget.width + 20,
+						newWidget.y,
+					);
+					setWidgets((prev) => ({
+						...prev,
+						[newWidget.id]: newWidget,
+					}));
+					setSelectedWidgetId(newWidget.id);
+					break;
+				}
 			}
 		};
 		document.addEventListener('keydown', onKeyDown);
 		return () => {
 			document.removeEventListener('keydown', onKeyDown);
 		};
-	}, [selectedWidgetId]);
+	}, [selectedWidgetId, widgets]);
 
 	return (
 		<>
