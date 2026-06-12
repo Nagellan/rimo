@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { CanvasRenderer } from '../../entities/renderers/CanvasRenderer';
-import type { Widget } from '../../entities/widgets/Widget';
-import type { Dispatch } from '../../types/events';
-import { EVENT } from '../../constants/events';
-import { useMoveViewport } from './useMoveViewport';
-import { useMoveWidget } from './useMoveWidget';
+import type { Widget } from '../../entities/widgets';
+import {
+	BOARD_ACTION_TYPE,
+	type BoardActionDispatch,
+} from '../../features/board/actions';
+import { useMoveViewport, useMoveWidget } from '../../hooks';
 
 type Props = {
 	widgets: Record<string, Widget>;
@@ -15,7 +16,7 @@ type Props = {
 	viewportX: number;
 	viewportY: number;
 	dpr: number;
-	dispatch: Dispatch;
+	dispatch: BoardActionDispatch;
 };
 
 export const Canvas = ({
@@ -28,48 +29,7 @@ export const Canvas = ({
 	dpr,
 	dispatch,
 }: Props) => {
-	const [renderer, setRenderer] = useState<CanvasRenderer | null>(null);
-
-	const onRef = (el: HTMLCanvasElement | null) => {
-		if (!el) return;
-		const ctx = el.getContext('2d');
-		if (!ctx) return;
-		setRenderer(
-			new CanvasRenderer(ctx, width, height, viewportX, viewportY, dpr),
-		);
-	};
-
-	const getCenteredCoordinates = (x: number, y: number): [number, number] => {
-		return [
-			x - (Math.floor(width / 2) + viewportX),
-			Math.floor(height / 2) - viewportY - y,
-		];
-	};
-
-	// const getOffsetCoordinates = (x: number, y: number): [number, number] => {
-	// 	return [
-	// 		Math.floor(width / 2) + viewportX + x,
-	// 		Math.floor(height / 2) - viewportY - y,
-	// 	];
-	// };
-
-	if (renderer) {
-		renderer.setViewportX(viewportX);
-		renderer.setViewportY(viewportY);
-		renderer.setWidth(width);
-		renderer.setHeight(height);
-		renderer.setDpr(dpr);
-
-		renderer.clear();
-		for (const id in widgets) {
-			const widget = widgets[id];
-			widget.accept(renderer);
-		}
-		for (const id of selectedWidgetIds) {
-			const widget = widgets[id];
-			renderer.select(widget);
-		}
-	}
+	const rendererRef = useRef<CanvasRenderer>(null);
 
 	const [moving, setMoving] = useState(false);
 	const [movingWidgetId, setMovingWidgetId] = useState<string | null>(null);
@@ -81,10 +41,30 @@ export const Canvas = ({
 	const [sX, setSX] = useState(0);
 	const [sY, setSY] = useState(0);
 
+	useEffect(() => {
+		if (!rendererRef.current) return;
+
+		rendererRef.current.setViewportX(viewportX);
+		rendererRef.current.setViewportY(viewportY);
+		rendererRef.current.setWidth(width);
+		rendererRef.current.setHeight(height);
+		rendererRef.current.setDpr(dpr);
+
+		rendererRef.current.clear();
+		for (const id in widgets) {
+			const widget = widgets[id];
+			widget.accept(rendererRef.current);
+		}
+		for (const id of selectedWidgetIds) {
+			const widget = widgets[id];
+			rendererRef.current.select(widget);
+		}
+	}, [dpr, height, selectedWidgetIds, viewportX, viewportY, widgets, width]);
+
 	const { onViewportMoveStart, onViewportMoving, onViewportMoveEnd } =
 		useMoveViewport(viewportX, viewportY, width, height, (x, y) => {
 			dispatch({
-				type: EVENT.MOVE_VIEWPORT,
+				type: BOARD_ACTION_TYPE.MOVE_VIEWPORT,
 				payload: { x, y },
 			});
 		});
@@ -93,10 +73,31 @@ export const Canvas = ({
 		useMoveWidget((x, y) => {
 			if (!movingWidgetId) return;
 			dispatch({
-				type: EVENT.MOVE_WIDGET,
+				type: BOARD_ACTION_TYPE.MOVE_WIDGET,
 				payload: { id: movingWidgetId, x, y },
 			});
 		});
+
+	const onRef = (el: HTMLCanvasElement | null) => {
+		if (!el) return;
+		const ctx = el.getContext('2d');
+		if (!ctx) return;
+		rendererRef.current = new CanvasRenderer(
+			ctx,
+			width,
+			height,
+			viewportX,
+			viewportY,
+			dpr,
+		);
+	};
+
+	const getCenteredCoordinates = (x: number, y: number): [number, number] => {
+		return [
+			x - (Math.floor(width / 2) + viewportX),
+			Math.floor(height / 2) - viewportY - y,
+		];
+	};
 
 	return (
 		<canvas
@@ -120,7 +121,7 @@ export const Canvas = ({
 					if (widget.containsPoint(x, y)) {
 						selected = id;
 						dispatch({
-							type: EVENT.SELECT_WIDGET,
+							type: BOARD_ACTION_TYPE.SELECT_WIDGET,
 							payload: { id, add: event.shiftKey },
 						});
 						onWidgetMoveStart(
@@ -132,11 +133,8 @@ export const Canvas = ({
 						);
 						break;
 					}
-					const selectionCorner = renderer?.getSelectionCorner(
-						x,
-						y,
-						widget,
-					);
+					const selectionCorner =
+						rendererRef.current?.getSelectionCorner(x, y, widget);
 					if (selectionCorner) {
 						selected = id;
 						setSelectionCorner(selectionCorner);
@@ -151,7 +149,7 @@ export const Canvas = ({
 				}
 				if (!selected) {
 					dispatch({
-						type: EVENT.SELECT_WIDGET,
+						type: BOARD_ACTION_TYPE.SELECT_WIDGET,
 						payload: { id: null },
 					});
 					onViewportMoveStart(
@@ -192,7 +190,7 @@ export const Canvas = ({
 						}
 						if (newHeight < 40 || newWidth < 40) return;
 						dispatch({
-							type: EVENT.RESIZE_WIDGET,
+							type: BOARD_ACTION_TYPE.RESIZE_WIDGET,
 							payload: {
 								id: movingWidgetId,
 								x: newX,
