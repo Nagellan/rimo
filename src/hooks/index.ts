@@ -1,5 +1,5 @@
 export { useDevicePixelRatio } from './useDevicePixelRatio';
-export { useMoveViewport } from './useMoveViewport';
-export { useMoveWidget } from './useMoveWidget';
-export { useResizeWidget } from './useResizeWidget';
+export { useViewportPointerEvents } from './useViewportPointerEvents';
+export { useWidgetsPointerEvents } from './useWidgetsPointerEvents';
+export { useResizeWidgets } from './useResizeWidgets';
 export { useWindowSize } from './useWindowSize';

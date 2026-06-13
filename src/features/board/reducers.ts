@@ -32,58 +32,75 @@ export const boardReducer = (
 				},
 			};
 		}
-		case BOARD_ACTION_TYPE.MOVE_WIDGET: {
-			const { id, x, y } = action.payload;
-			const widget = prevState.widgets[id];
-			const newWidget = widget.clone();
-			newWidget.reposition(x, y);
+		case BOARD_ACTION_TYPE.MOVE_WIDGETS: {
+			const { coordinates } = action.payload;
+
+			const newWidgets: Record<string, Widget> = {};
+
+			for (const { id, x, y } of coordinates) {
+				const widget = prevState.widgets[id];
+
+				newWidgets[id] = widget.clone();
+				newWidgets[id].reposition(x, y);
+			}
+
 			return {
 				...prevState,
 				widgets: {
 					...prevState.widgets,
-					[newWidget.id]: newWidget,
+					...newWidgets,
 				},
+				selectedWidgetIds: coordinates.map(({ id }) => id),
 			};
 		}
 		case BOARD_ACTION_TYPE.SELECT_WIDGET: {
-			const { id, add } = action.payload;
-			if (id === null) {
-				return {
-					...prevState,
-					selectedWidgetIds: [],
-				};
-			} else {
-				if (add) {
-					return {
-						...prevState,
-						selectedWidgetIds: prevState.selectedWidgetIds.includes(
-							id,
-						)
-							? prevState.selectedWidgetIds.filter(
-									(_id) => _id !== id,
-								)
-							: [...prevState.selectedWidgetIds, id],
-					};
-				} else {
-					return {
-						...prevState,
-						selectedWidgetIds: [id],
-					};
-				}
-			}
-		}
-		case BOARD_ACTION_TYPE.RESIZE_WIDGET: {
-			const { id, x, y, width, height } = action.payload;
-			const widget = prevState.widgets[id];
-			const newWidget = widget.clone();
-			newWidget.reposition(x, y);
-			newWidget.resize(width, height);
+			const { id } = action.payload;
+
 			return {
 				...prevState,
-				widgets: {
-					...prevState.widgets,
-					[newWidget.id]: newWidget,
-				},
+				selectedWidgetIds: [id],
+			};
+		}
+		case BOARD_ACTION_TYPE.TOGGLE_WIDGET_SELECTION: {
+			const { id } = action.payload;
+
+			if (prevState.selectedWidgetIds.includes(id)) {
+				return {
+					...prevState,
+					selectedWidgetIds: prevState.selectedWidgetIds.filter(
+						(selectedWidgetId) => selectedWidgetId !== id,
+					),
+				};
+			}
+
+			return {
+				...prevState,
+				selectedWidgetIds: [...prevState.selectedWidgetIds, id],
+			};
+		}
+		case BOARD_ACTION_TYPE.RESET_WIDGET_SELECTION: {
+			return {
+				...prevState,
+				selectedWidgetIds: [],
+			};
+		}
+		case BOARD_ACTION_TYPE.RESIZE_WIDGETS: {
+			const { coordinates } = action.payload;
+			const nextWidgets = { ...prevState.widgets };
+
+			for (const { id, x, y, width, height } of coordinates) {
+				const widget = nextWidgets[id];
+				if (!widget) continue;
+
+				const nextWidget = widget.clone();
+				nextWidget.reposition(x, y);
+				nextWidget.resize(width, height);
+				nextWidgets[id] = nextWidget;
+			}
+
+			return {
+				...prevState,
+				widgets: nextWidgets,
 			};
 		}
 		case BOARD_ACTION_TYPE.DELETE_WIDGETS: {

@@ -3,9 +3,11 @@ import type { Widget } from '../../entities/widgets/Widget';
 export const BOARD_ACTION_TYPE = {
 	MOVE_VIEWPORT: 'move-viewport',
 	ADD_WIDGET: 'add-widget',
-	MOVE_WIDGET: 'move-widget',
+	MOVE_WIDGETS: 'move-widgets',
 	SELECT_WIDGET: 'select-widget',
-	RESIZE_WIDGET: 'resize-widget',
+	TOGGLE_WIDGET_SELECTION: 'toggle-widget-selection',
+	RESET_WIDGET_SELECTION: 'reset-widget-selection',
+	RESIZE_WIDGETS: 'resize-widgets',
 	DELETE_WIDGETS: 'delete-widgets',
 	DUPLICATE_WIDGETS: 'duplicate-widgets',
 } as const;
@@ -25,31 +27,41 @@ type AddWidgetAction = {
 	};
 };
 
-type MoveWidgetAction = {
-	type: typeof BOARD_ACTION_TYPE.MOVE_WIDGET;
+type MoveWidgetsAction = {
+	type: typeof BOARD_ACTION_TYPE.MOVE_WIDGETS;
 	payload: {
-		id: string;
-		x: number;
-		y: number;
+		coordinates: Array<{ id: string; x: number; y: number }>;
 	};
 };
 
 type SelectWidgetAction = {
 	type: typeof BOARD_ACTION_TYPE.SELECT_WIDGET;
 	payload: {
-		id: string | null;
-		add?: boolean;
+		id: string;
 	};
 };
 
-type ResizeWidgetAction = {
-	type: typeof BOARD_ACTION_TYPE.RESIZE_WIDGET;
+type ToggleWidgetSelectionAction = {
+	type: typeof BOARD_ACTION_TYPE.TOGGLE_WIDGET_SELECTION;
 	payload: {
 		id: string;
-		x: number;
-		y: number;
-		width: number;
-		height: number;
+	};
+};
+
+type ResetWidgetSelectionAction = {
+	type: typeof BOARD_ACTION_TYPE.RESET_WIDGET_SELECTION;
+};
+
+type ResizeWidgetsAction = {
+	type: typeof BOARD_ACTION_TYPE.RESIZE_WIDGETS;
+	payload: {
+		coordinates: Array<{
+			id: string;
+			x: number;
+			y: number;
+			width: number;
+			height: number;
+		}>;
 	};
 };
 
@@ -70,9 +82,11 @@ type DuplicateWidgetsAction = {
 export type BoardAction =
 	| MoveViewportAction
 	| AddWidgetAction
-	| MoveWidgetAction
+	| MoveWidgetsAction
 	| SelectWidgetAction
-	| ResizeWidgetAction
+	| ToggleWidgetSelectionAction
+	| ResetWidgetSelectionAction
+	| ResizeWidgetsAction
 	| DeleteWidgetsAction
 	| DuplicateWidgetsAction;
 
