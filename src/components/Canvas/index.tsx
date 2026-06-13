@@ -10,7 +10,7 @@ type Props = {
 	onPointerUp: PointerEventHandler<HTMLCanvasElement>;
 };
 
-export const Canvas = ({
+export function Canvas({
 	ref,
 	width,
 	height,
@@ -18,7 +18,7 @@ export const Canvas = ({
 	onPointerDown,
 	onPointerMove,
 	onPointerUp,
-}: Props) => {
+}: Props) {
 	return (
 		<canvas
 			ref={ref}
@@ -34,4 +34,4 @@ export const Canvas = ({
 			onPointerUp={onPointerUp}
 		/>
 	);
-};
+}

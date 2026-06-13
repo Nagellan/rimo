@@ -2,7 +2,7 @@ import type { Widget } from '../../entities/widgets/Widget';
 import type { BoardAction } from './actions';
 import { BOARD_ACTION_TYPE } from './actions';
 
-type BoardState = {
+export type BoardState = {
 	viewportX: number;
 	viewportY: number;
 	widgets: Record<string, Widget>;
