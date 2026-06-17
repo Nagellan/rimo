@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useLayoutEffect } from 'react';
 
 import { Canvas } from '../Canvas';
 import { Tools } from '../Tools';
@@ -23,7 +23,7 @@ export function Board() {
 
 	useKeyboardEvents();
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		if (!rendererRef.current) return;
 
 		rendererRef.current.setViewportX(viewportX);
