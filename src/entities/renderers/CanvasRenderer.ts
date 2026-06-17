@@ -1,7 +1,5 @@
 import { isInsideCircle } from '../../utils/geometry';
-import type { Widget } from '../widgets/Widget';
-import { Rectangle } from '../widgets/Rectangle';
-import { Circle } from '../widgets/Circle';
+import { Rectangle, Circle, Ellipse, Widget } from '../widgets';
 import { Style } from '../styles/Style';
 import type { Renderer } from './Renderer';
 
@@ -159,6 +157,23 @@ export class CanvasRenderer implements Renderer {
 			0,
 			2 * Math.PI,
 			false,
+		);
+
+		this.applyStyle(style);
+	}
+
+	public drawEllipse(ellipse: Ellipse) {
+		const { x, y, radiusX, radiusY, style } = ellipse;
+
+		this.ctx.beginPath();
+		this.ctx.ellipse(
+			this.centerX + x + radiusX + this.viewportX,
+			this.centerY - y + radiusY - this.viewportY,
+			radiusX,
+			radiusY,
+			0,
+			0,
+			2 * Math.PI,
 		);
 
 		this.applyStyle(style);
