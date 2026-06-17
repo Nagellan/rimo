@@ -2,6 +2,8 @@ import { useRef, type PointerEvent } from 'react';
 
 import type { Widget } from '../entities/widgets/Widget';
 
+const CLICK_THRESHOLD = 2;
+
 export const useWidgetsPointerEvents = (
 	onMoving: (
 		coordinates: Array<{ id: string; x: number; y: number }>,
@@ -49,11 +51,13 @@ export const useWidgetsPointerEvents = (
 	const onWidgetsMoving = (x: number, y: number) => {
 		if (movingWidgetIdRef.current === null) return;
 
-		movedRef.current = true;
-
 		const deltaX = x - initialX.current;
 		const deltaY = y - initialY.current;
+		const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
+		if (distance < CLICK_THRESHOLD) return;
+
+		movedRef.current = true;
 		onMoving(
 			initialSelectedWidgetsCoordinates.current.map((coordinate) => ({
 				id: coordinate.id,

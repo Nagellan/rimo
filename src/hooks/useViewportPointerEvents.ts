@@ -1,5 +1,7 @@
 import { useRef } from 'react';
 
+const CLICK_THRESHOLD = 3;
+
 export const useViewportPointerEvents = (
 	onMoving: (offsetX: number, offsetY: number) => void,
 	onClick: () => void,
@@ -27,6 +29,13 @@ export const useViewportPointerEvents = (
 
 	const onViewportMoving = (offsetX: number, offsetY: number) => {
 		if (!movingStartedRef.current) return;
+
+		const dx = offsetX - initialOffsetXRef.current;
+		const dy = offsetY - initialOffsetYRef.current;
+		const distance = Math.sqrt(dx * dx + dy * dy);
+
+		if (distance < CLICK_THRESHOLD) return;
+
 		movedRef.current = true;
 		onMoving(
 			initialViewportXRef.current + offsetX - initialOffsetXRef.current,
