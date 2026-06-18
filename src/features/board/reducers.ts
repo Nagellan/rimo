@@ -8,6 +8,33 @@ export type BoardState = {
 	widgets: Record<string, Widget>;
 };
 
+function getSortedWidgetIds(widgets: Record<string, Widget>): string[] {
+	return Object.keys(widgets).sort(
+		(a, b) => widgets[a].layer - widgets[b].layer,
+	);
+}
+
+// Re-assigns the same set of layer values (taken from `sortedIds`, in order)
+// to a new arrangement of ids (`newOrder`), cloning each affected widget.
+function applyLayerOrder(
+	widgets: Record<string, Widget>,
+	sortedIds: string[],
+	newOrder: string[],
+): Record<string, Widget> {
+	const layers = sortedIds.map((id) => widgets[id].layer);
+
+	const nextWidgets: Record<string, Widget> = {};
+
+	for (let i = 0; i < newOrder.length; i++) {
+		const id = newOrder[i];
+		const widget = widgets[id].clone();
+		widget.setLayer(layers[i]);
+		nextWidgets[id] = widget;
+	}
+
+	return nextWidgets;
+}
+
 export const boardReducer = (
 	prevState: BoardState,
 	action: BoardAction,
@@ -170,6 +197,100 @@ export const boardReducer = (
 					...prevState.widgets,
 					...updatedWidgets,
 				},
+			};
+		}
+		case BOARD_ACTION_TYPE.BRING_FORWARD: {
+			const sortedIds = getSortedWidgetIds(prevState.widgets);
+			const newOrder = [...sortedIds];
+
+			// Scan from the top down: whenever a selected widget is
+			// immediately below an unselected one, swap them so it moves up.
+			for (let i = newOrder.length - 2; i >= 0; i--) {
+				const currentId = newOrder[i];
+				const nextId = newOrder[i + 1];
+
+				if (
+					prevState.widgets[currentId].selected &&
+					!prevState.widgets[nextId].selected
+				) {
+					newOrder[i] = nextId;
+					newOrder[i + 1] = currentId;
+				}
+			}
+
+			return {
+				...prevState,
+				widgets: applyLayerOrder(
+					prevState.widgets,
+					sortedIds,
+					newOrder,
+				),
+			};
+		}
+		case BOARD_ACTION_TYPE.BRING_BACKWARD: {
+			const sortedIds = getSortedWidgetIds(prevState.widgets);
+			const newOrder = [...sortedIds];
+
+			// Scan from the bottom up: whenever a selected widget is
+			// immediately above an unselected one, swap them so it moves down.
+			for (let i = 1; i < newOrder.length; i++) {
+				const currentId = newOrder[i];
+				const prevId = newOrder[i - 1];
+
+				if (
+					prevState.widgets[currentId].selected &&
+					!prevState.widgets[prevId].selected
+				) {
+					newOrder[i] = prevId;
+					newOrder[i - 1] = currentId;
+				}
+			}
+
+			return {
+				...prevState,
+				widgets: applyLayerOrder(
+					prevState.widgets,
+					sortedIds,
+					newOrder,
+				),
+			};
+		}
+		case BOARD_ACTION_TYPE.BRING_TO_FRONT: {
+			const sortedIds = getSortedWidgetIds(prevState.widgets);
+			const unselected = sortedIds.filter(
+				(id) => !prevState.widgets[id].selected,
+			);
+			const selected = sortedIds.filter(
+				(id) => prevState.widgets[id].selected,
+			);
+			const newOrder = [...unselected, ...selected];
+
+			return {
+				...prevState,
+				widgets: applyLayerOrder(
+					prevState.widgets,
+					sortedIds,
+					newOrder,
+				),
+			};
+		}
+		case BOARD_ACTION_TYPE.BRING_TO_BACK: {
+			const sortedIds = getSortedWidgetIds(prevState.widgets);
+			const unselected = sortedIds.filter(
+				(id) => !prevState.widgets[id].selected,
+			);
+			const selected = sortedIds.filter(
+				(id) => prevState.widgets[id].selected,
+			);
+			const newOrder = [...selected, ...unselected];
+
+			return {
+				...prevState,
+				widgets: applyLayerOrder(
+					prevState.widgets,
+					sortedIds,
+					newOrder,
+				),
 			};
 		}
 		default: {

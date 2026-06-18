@@ -2,12 +2,15 @@ import { nanoid } from 'nanoid';
 import type { Renderer } from '../renderers/Renderer';
 import type { Style } from '../styles/Style';
 
+let layer = 0;
+
 export abstract class Widget {
 	public readonly id: string;
 	protected _x: number;
 	protected _y: number;
 	protected _style: Style;
 	protected _selected: boolean;
+	protected _layer: number;
 
 	constructor(x: number, y: number, style: Style) {
 		this.id = nanoid();
@@ -15,6 +18,8 @@ export abstract class Widget {
 		this._y = y;
 		this._style = style;
 		this._selected = false;
+		this._layer = layer;
+		layer++;
 	}
 
 	public get x(): number {
@@ -37,6 +42,10 @@ export abstract class Widget {
 		return this._selected;
 	}
 
+	public get layer(): number {
+		return this._layer;
+	}
+
 	public select(): void {
 		this._selected = true;
 	}
@@ -47,6 +56,10 @@ export abstract class Widget {
 
 	public toggleSelection(): void {
 		this._selected = !this._selected;
+	}
+
+	public setLayer(value: number): void {
+		this._layer = value;
 	}
 
 	public clone(): Widget {

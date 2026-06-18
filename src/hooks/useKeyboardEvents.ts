@@ -27,7 +27,30 @@ export function useKeyboardEvents() {
 							type: BOARD_ACTION_TYPE.DUPLICATE_SELECTED_WIDGETS,
 						});
 					}
-
+					break;
+				}
+				case '[': {
+					if (event.metaKey || event.ctrlKey) {
+						dispatch({
+							type: BOARD_ACTION_TYPE.BRING_BACKWARD,
+						});
+					} else {
+						dispatch({
+							type: BOARD_ACTION_TYPE.BRING_TO_BACK,
+						});
+					}
+					break;
+				}
+				case ']': {
+					if (event.metaKey || event.ctrlKey) {
+						dispatch({
+							type: BOARD_ACTION_TYPE.BRING_FORWARD,
+						});
+					} else {
+						dispatch({
+							type: BOARD_ACTION_TYPE.BRING_TO_FRONT,
+						});
+					}
 					break;
 				}
 			}

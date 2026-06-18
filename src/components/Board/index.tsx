@@ -33,9 +33,11 @@ export function Board() {
 
 		rendererRef.current.clear();
 
-		for (const id in widgets) {
-			const widget = widgets[id];
+		const sortedWidgets = Object.values(widgets).sort(
+			(w1, w2) => w1.layer - w2.layer,
+		);
 
+		for (const widget of sortedWidgets) {
 			widget.accept(rendererRef.current);
 
 			if (widget.selected) {

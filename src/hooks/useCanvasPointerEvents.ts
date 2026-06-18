@@ -82,40 +82,42 @@ export function useCanvasPointerEvents(
 			(widget) => widget.selected,
 		);
 
+		const pointedWidgets = [];
+
 		for (const id in widgets) {
 			const widget = widgets[id];
-
-			if (widget.selected) {
-				const widgetSelectionCorner =
-					rendererRef.current?.getSelectionCorner(x, y, widget) ??
-					null;
-
-				// pointer is down on widget selection corner
-				if (widgetSelectionCorner !== null) {
-					onWidgetResizeStart(
-						selectedWidgets,
-						widgetSelectionCorner,
-						x,
-						y,
-					);
-					return;
-				}
-			}
-
-			// pointer is down on widget
-			if (widget.containsPoint(x, y)) {
-				onWidgetsMoveStart(selectedWidgets, widget, x, y);
-				return;
+			if (
+				(widget.selected &&
+					rendererRef.current?.getSelectionCorner(x, y, widget)) ||
+				widget.containsPoint(x, y)
+			) {
+				pointedWidgets.push(widget);
 			}
 		}
 
-		// pointer is down on grid
-		onViewportMoveStart(
-			viewportX,
-			viewportY,
-			event.nativeEvent.offsetX,
-			event.nativeEvent.offsetY,
-		);
+		if (pointedWidgets.length > 0) {
+			pointedWidgets.sort((w1, w2) => w2.layer - w1.layer);
+
+			const [topLayerWidget] = pointedWidgets;
+			const corner = rendererRef.current?.getSelectionCorner(
+				x,
+				y,
+				topLayerWidget,
+			);
+			if (corner) {
+				onWidgetResizeStart(selectedWidgets, corner, x, y);
+			} else {
+				onWidgetsMoveStart(selectedWidgets, topLayerWidget, x, y);
+			}
+		} else {
+			// pointer is down on grid
+			onViewportMoveStart(
+				viewportX,
+				viewportY,
+				event.nativeEvent.offsetX,
+				event.nativeEvent.offsetY,
+			);
+		}
 	}
 
 	function handlePointerMove(event: PointerEvent<HTMLCanvasElement>) {

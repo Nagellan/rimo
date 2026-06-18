@@ -11,7 +11,7 @@ export function useWidgetsPointerEvents(
 	onMoving: (coordinates: Coordinates) => void,
 	onClick: (event: PointerEvent<HTMLCanvasElement>, id: string) => void,
 ) {
-	const startWidgetIdRef = useRef<string>(null);
+	const pointedWidgetIdRef = useRef<string>(null);
 	const movedRef = useRef(false);
 	const initialCoordinatesRef = useRef<Coordinates>({});
 	const initialXRef = useRef(0);
@@ -23,7 +23,7 @@ export function useWidgetsPointerEvents(
 		x: number,
 		y: number,
 	) => {
-		startWidgetIdRef.current = startWidget.id;
+		pointedWidgetIdRef.current = startWidget.id;
 		movedRef.current = false;
 		if (startWidget.selected) {
 			const coordinates: Coordinates = {};
@@ -47,7 +47,7 @@ export function useWidgetsPointerEvents(
 	};
 
 	const onWidgetsMoving = (x: number, y: number) => {
-		if (startWidgetIdRef.current === null) return;
+		if (pointedWidgetIdRef.current === null) return;
 
 		const deltaX = x - initialXRef.current;
 		const deltaY = y - initialYRef.current;
@@ -68,11 +68,11 @@ export function useWidgetsPointerEvents(
 	};
 
 	const onWidgetsMoveEnd = (event: PointerEvent<HTMLCanvasElement>) => {
-		if (startWidgetIdRef.current !== null && !movedRef.current) {
-			onClick(event, startWidgetIdRef.current);
+		if (pointedWidgetIdRef.current !== null && !movedRef.current) {
+			onClick(event, pointedWidgetIdRef.current);
 		}
 
-		startWidgetIdRef.current = null;
+		pointedWidgetIdRef.current = null;
 		movedRef.current = false;
 		initialCoordinatesRef.current = {};
 		initialXRef.current = 0;
