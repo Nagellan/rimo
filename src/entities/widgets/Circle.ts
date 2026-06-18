@@ -24,7 +24,18 @@ export class Circle extends Widget {
 	}
 
 	public duplicate(): Circle {
-		return new Circle(this.x, this.y, this.radius, this.style.clone());
+		const circleDuplicate = new Circle(
+			this.x,
+			this.y,
+			this.radius,
+			this.style.clone(),
+		);
+
+		if (this.selected) {
+			circleDuplicate.select();
+		}
+
+		return circleDuplicate;
 	}
 
 	public accept(renderer: Renderer) {

@@ -12,8 +12,7 @@ export function useCanvasPointerEvents(
 	height: number,
 	rendererRef: RefObject<CanvasRenderer | null>,
 ) {
-	const [{ viewportX, viewportY, widgets, selectedWidgetIds }, dispatch] =
-		useBoardState();
+	const [{ viewportX, viewportY, widgets }, dispatch] = useBoardState();
 
 	const { onViewportMoveStart, onViewportMoving, onViewportMoveEnd } =
 		useViewportPointerEvents(
@@ -23,10 +22,12 @@ export function useCanvasPointerEvents(
 					payload: { x: offsetX, y: offsetY },
 				});
 			},
-			() => {
-				dispatch({
-					type: BOARD_ACTION_TYPE.RESET_WIDGET_SELECTION,
-				});
+			(event) => {
+				if (!event.shiftKey) {
+					dispatch({
+						type: BOARD_ACTION_TYPE.RESET_WIDGET_SELECTION,
+					});
+				}
 			},
 		);
 
@@ -54,10 +55,10 @@ export function useCanvasPointerEvents(
 		);
 
 	const { onWidgetResizeStart, onWidgetResizing, onWidgetResizeEnd } =
-		useResizeWidgets((coordinates) => {
+		useResizeWidgets((boundingBoxes) => {
 			dispatch({
 				type: BOARD_ACTION_TYPE.RESIZE_WIDGETS,
-				payload: { coordinates },
+				payload: { boundingBoxes },
 			});
 		});
 
@@ -77,29 +78,33 @@ export function useCanvasPointerEvents(
 			event.nativeEvent.offsetY,
 		);
 
-		for (const widgetId of selectedWidgetIds) {
-			const widget = widgets[widgetId];
+		const selectedWidgets = Object.values(widgets).filter(
+			(widget) => widget.selected,
+		);
 
-			const widgetSelectionCorner =
-				rendererRef.current?.getSelectionCorner(x, y, widget) ?? null;
+		for (const id in widgets) {
+			const widget = widgets[id];
 
-			// pointer is down on widget selection corner
-			if (widgetSelectionCorner !== null) {
-				onWidgetResizeStart(
-					selectedWidgetIds,
-					widgets,
-					widgetSelectionCorner,
-					x,
-					y,
-				);
-				return;
+			if (widget.selected) {
+				const widgetSelectionCorner =
+					rendererRef.current?.getSelectionCorner(x, y, widget) ??
+					null;
+
+				// pointer is down on widget selection corner
+				if (widgetSelectionCorner !== null) {
+					onWidgetResizeStart(
+						selectedWidgets,
+						widgetSelectionCorner,
+						x,
+						y,
+					);
+					return;
+				}
 			}
-		}
 
-		for (const widget of Object.values(widgets)) {
 			// pointer is down on widget
 			if (widget.containsPoint(x, y)) {
-				onWidgetsMoveStart(selectedWidgetIds, widgets, x, y, widget.id);
+				onWidgetsMoveStart(selectedWidgets, widget, x, y);
 				return;
 			}
 		}
@@ -125,7 +130,7 @@ export function useCanvasPointerEvents(
 	}
 
 	function handlePointerUp(event: PointerEvent<HTMLCanvasElement>) {
-		onViewportMoveEnd();
+		onViewportMoveEnd(event);
 		onWidgetsMoveEnd(event);
 		onWidgetResizeEnd();
 	}

@@ -4,15 +4,14 @@ import { BOARD_ACTION_TYPE } from '../features/board/actions';
 import { useBoardState } from '../features/board/contexts';
 
 export function useKeyboardEvents() {
-	const [{ selectedWidgetIds }, dispatch] = useBoardState();
+	const [, dispatch] = useBoardState();
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
 			switch (event.key) {
 				case 'Backspace': {
 					dispatch({
-						type: BOARD_ACTION_TYPE.DELETE_WIDGETS,
-						payload: { ids: selectedWidgetIds },
+						type: BOARD_ACTION_TYPE.DELETE_SELECTED_WIDGETS,
 					});
 					break;
 				}
@@ -23,15 +22,12 @@ export function useKeyboardEvents() {
 					break;
 				}
 				case 'd': {
-					if (
-						!selectedWidgetIds.length ||
-						(!event.metaKey && !event.ctrlKey)
-					)
-						break;
-					dispatch({
-						type: BOARD_ACTION_TYPE.DUPLICATE_WIDGETS,
-						payload: { ids: selectedWidgetIds },
-					});
+					if (event.metaKey || event.ctrlKey) {
+						dispatch({
+							type: BOARD_ACTION_TYPE.DUPLICATE_SELECTED_WIDGETS,
+						});
+					}
+
 					break;
 				}
 			}
@@ -40,5 +36,5 @@ export function useKeyboardEvents() {
 		return () => {
 			document.removeEventListener('keydown', onKeyDown);
 		};
-	}, [selectedWidgetIds, dispatch]);
+	}, [dispatch]);
 }

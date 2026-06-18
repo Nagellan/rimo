@@ -1,15 +1,16 @@
 import type { Widget } from '../../entities/widgets/Widget';
+import type { Coordinate, BoundingBox } from './types';
 
 export const BOARD_ACTION_TYPE = {
 	MOVE_VIEWPORT: 'move-viewport',
 	ADD_WIDGET: 'add-widget',
 	MOVE_WIDGETS: 'move-widgets',
+	RESIZE_WIDGETS: 'resize-widgets',
 	SELECT_WIDGET: 'select-widget',
 	TOGGLE_WIDGET_SELECTION: 'toggle-widget-selection',
 	RESET_WIDGET_SELECTION: 'reset-widget-selection',
-	RESIZE_WIDGETS: 'resize-widgets',
-	DELETE_WIDGETS: 'delete-widgets',
-	DUPLICATE_WIDGETS: 'duplicate-widgets',
+	DELETE_SELECTED_WIDGETS: 'delete-selected-widgets',
+	DUPLICATE_SELECTED_WIDGETS: 'duplicate-selected-widgets',
 } as const;
 
 type MoveViewportAction = {
@@ -30,7 +31,14 @@ type AddWidgetAction = {
 type MoveWidgetsAction = {
 	type: typeof BOARD_ACTION_TYPE.MOVE_WIDGETS;
 	payload: {
-		coordinates: Array<{ id: string; x: number; y: number }>;
+		coordinates: Record<string, Coordinate>;
+	};
+};
+
+type ResizeWidgetsAction = {
+	type: typeof BOARD_ACTION_TYPE.RESIZE_WIDGETS;
+	payload: {
+		boundingBoxes: Record<string, BoundingBox>;
 	};
 };
 
@@ -52,42 +60,23 @@ type ResetWidgetSelectionAction = {
 	type: typeof BOARD_ACTION_TYPE.RESET_WIDGET_SELECTION;
 };
 
-type ResizeWidgetsAction = {
-	type: typeof BOARD_ACTION_TYPE.RESIZE_WIDGETS;
-	payload: {
-		coordinates: Array<{
-			id: string;
-			x: number;
-			y: number;
-			width: number;
-			height: number;
-		}>;
-	};
+type DeleteSelectedWidgetsAction = {
+	type: typeof BOARD_ACTION_TYPE.DELETE_SELECTED_WIDGETS;
 };
 
-type DeleteWidgetsAction = {
-	type: typeof BOARD_ACTION_TYPE.DELETE_WIDGETS;
-	payload: {
-		ids: string[];
-	};
-};
-
-type DuplicateWidgetsAction = {
-	type: typeof BOARD_ACTION_TYPE.DUPLICATE_WIDGETS;
-	payload: {
-		ids: string[];
-	};
+type DuplicateSelectedWidgetsAction = {
+	type: typeof BOARD_ACTION_TYPE.DUPLICATE_SELECTED_WIDGETS;
 };
 
 export type BoardAction =
 	| MoveViewportAction
 	| AddWidgetAction
 	| MoveWidgetsAction
+	| ResizeWidgetsAction
 	| SelectWidgetAction
 	| ToggleWidgetSelectionAction
 	| ResetWidgetSelectionAction
-	| ResizeWidgetsAction
-	| DeleteWidgetsAction
-	| DuplicateWidgetsAction;
+	| DeleteSelectedWidgetsAction
+	| DuplicateSelectedWidgetsAction;
 
 export type BoardActionDispatch = (action: BoardAction) => void;

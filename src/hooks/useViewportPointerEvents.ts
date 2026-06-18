@@ -1,11 +1,11 @@
-import { useRef } from 'react';
+import { useRef, type PointerEvent } from 'react';
 
 const CLICK_THRESHOLD = 3;
 
-export const useViewportPointerEvents = (
+export function useViewportPointerEvents(
 	onMoving: (offsetX: number, offsetY: number) => void,
-	onClick: () => void,
-) => {
+	onClick: (event: PointerEvent<HTMLCanvasElement>) => void,
+) {
 	const movingStartedRef = useRef(false);
 	const movedRef = useRef(false);
 	const initialViewportXRef = useRef(0);
@@ -43,9 +43,9 @@ export const useViewportPointerEvents = (
 		);
 	};
 
-	const onViewportMoveEnd = () => {
+	const onViewportMoveEnd = (event: PointerEvent<HTMLCanvasElement>) => {
 		if (movingStartedRef.current && !movedRef.current) {
-			onClick();
+			onClick(event);
 		}
 
 		movingStartedRef.current = false;
@@ -61,4 +61,4 @@ export const useViewportPointerEvents = (
 		onViewportMoving,
 		onViewportMoveEnd,
 	};
-};
+}

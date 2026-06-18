@@ -27,13 +27,19 @@ export class Rectangle extends Widget {
 	}
 
 	public duplicate(): Rectangle {
-		return new Rectangle(
+		const rectangleDuplicate = new Rectangle(
 			this.x,
 			this.y,
 			this.width,
 			this.height,
 			this.style.clone(),
 		);
+
+		if (this.selected) {
+			rectangleDuplicate.select();
+		}
+
+		return rectangleDuplicate;
 	}
 
 	public accept(renderer: Renderer): void {

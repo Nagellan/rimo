@@ -7,12 +7,14 @@ export abstract class Widget {
 	protected _x: number;
 	protected _y: number;
 	protected _style: Style;
+	protected _selected: boolean;
 
 	constructor(x: number, y: number, style: Style) {
 		this.id = nanoid();
 		this._x = x;
 		this._y = y;
 		this._style = style;
+		this._selected = false;
 	}
 
 	public get x(): number {
@@ -29,6 +31,22 @@ export abstract class Widget {
 
 	public get style(): Style {
 		return this._style;
+	}
+
+	public get selected(): boolean {
+		return this._selected;
+	}
+
+	public select(): void {
+		this._selected = true;
+	}
+
+	public deselect(): void {
+		this._selected = false;
+	}
+
+	public toggleSelection(): void {
+		this._selected = !this._selected;
 	}
 
 	public clone(): Widget {

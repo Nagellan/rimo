@@ -36,13 +36,19 @@ export class Ellipse extends Widget {
 	}
 
 	public duplicate(): Ellipse {
-		return new Ellipse(
+		const ellipseDuplicate = new Ellipse(
 			this.x,
 			this.y,
 			this.radiusX,
 			this.radiusY,
 			this.style.clone(),
 		);
+
+		if (this.selected) {
+			ellipseDuplicate.select();
+		}
+
+		return ellipseDuplicate;
 	}
 
 	public accept(renderer: Renderer) {

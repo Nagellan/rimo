@@ -16,8 +16,7 @@ export function Board() {
 
 	const { width, height } = useWindowSize();
 	const dpr = useDevicePixelRatio();
-	const [{ viewportX, viewportY, widgets, selectedWidgetIds }] =
-		useBoardState();
+	const [{ viewportX, viewportY, widgets }] = useBoardState();
 	const { handlePointerDown, handlePointerMove, handlePointerUp } =
 		useCanvasPointerEvents(width, height, rendererRef);
 
@@ -33,15 +32,17 @@ export function Board() {
 		rendererRef.current.setDpr(dpr);
 
 		rendererRef.current.clear();
+
 		for (const id in widgets) {
 			const widget = widgets[id];
+
 			widget.accept(rendererRef.current);
+
+			if (widget.selected) {
+				rendererRef.current.select(widget);
+			}
 		}
-		for (const id of selectedWidgetIds) {
-			const widget = widgets[id];
-			rendererRef.current.select(widget);
-		}
-	}, [viewportX, viewportY, width, height, dpr, widgets, selectedWidgetIds]);
+	}, [viewportX, viewportY, width, height, dpr, widgets]);
 
 	function setRef(el: HTMLCanvasElement | null) {
 		if (!el) return;

@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 
 import type { Widget } from '../entities/widgets/Widget';
+import type { BoundingBox } from '../features/board/types';
 
 export type ResizeCorner =
 	| 'top-left'
@@ -8,46 +9,53 @@ export type ResizeCorner =
 	| 'bottom-right'
 	| 'bottom-left';
 
-interface WidgetBounds {
-	id: string;
-	x: number;
-	y: number;
-	width: number;
-	height: number;
+type BoundingBoxes = Record<string, BoundingBox>;
+
+function getBoundingBox(boundingBoxes: BoundingBoxes) {
+	let top = -Infinity;
+	let right = -Infinity;
+	let bottom = Infinity;
+	let left = Infinity;
+
+	for (const id in boundingBoxes) {
+		const { x, y, width, height } = boundingBoxes[id];
+
+		top = Math.max(top, y);
+		right = Math.max(right, x + width);
+		bottom = Math.min(bottom, y - height);
+		left = Math.min(left, x);
+	}
+
+	return { top, right, bottom, left };
 }
 
-const getBoundingBox = (widgets: WidgetBounds[]) => ({
-	left: Math.min(...widgets.map((w) => w.x)),
-	top: Math.max(...widgets.map((w) => w.y)), // top = max y
-	right: Math.max(...widgets.map((w) => w.x + w.width)),
-	bottom: Math.min(...widgets.map((w) => w.y - w.height)), // bottom = min y
-});
-
-export const useResizeWidgets = (
-	onResizing: (coordinates: WidgetBounds[]) => void,
-) => {
+export function useResizeWidgets(
+	onResizing: (boundingBoxes: BoundingBoxes) => void,
+) {
 	const resizingStarted = useRef(false);
 	const cornerRef = useRef<ResizeCorner>(null);
-	const initialWidgetsRef = useRef<WidgetBounds[]>([]);
+	const initialBoundingBoxesRef = useRef<BoundingBoxes>({});
 	const startXRef = useRef(0);
 	const startYRef = useRef(0);
 
 	const onWidgetResizeStart = (
-		selectedWidgetIds: string[],
-		widgets: Record<string, Widget>,
+		selectedWidgets: Widget[],
 		corner: ResizeCorner,
 		x: number,
 		y: number,
 	) => {
 		resizingStarted.current = true;
 		cornerRef.current = corner;
-		initialWidgetsRef.current = selectedWidgetIds.map((id) => ({
-			id,
-			x: widgets[id].x,
-			y: widgets[id].y,
-			width: widgets[id].width,
-			height: widgets[id].height,
-		}));
+		const boundingBoxes: BoundingBoxes = {};
+		for (const widget of selectedWidgets) {
+			boundingBoxes[widget.id] = {
+				x: widget.x,
+				y: widget.y,
+				width: widget.width,
+				height: widget.height,
+			};
+		}
+		initialBoundingBoxesRef.current = boundingBoxes;
 		startXRef.current = x;
 		startYRef.current = y;
 	};
@@ -55,14 +63,13 @@ export const useResizeWidgets = (
 	const onWidgetResizing = (x: number, y: number) => {
 		if (!resizingStarted.current) return;
 
-		const initialWidgets = initialWidgetsRef.current;
+		const initialBoundingBoxes = initialBoundingBoxesRef.current;
 		const corner = cornerRef.current;
-		if (initialWidgets.length === 0 || !corner) return;
 
 		const dx = x - startXRef.current;
 		const dy = y - startYRef.current;
 
-		const bbox = getBoundingBox(initialWidgets);
+		const bbox = getBoundingBox(initialBoundingBoxes);
 		const newBbox = { ...bbox };
 
 		// Top edge moves with corner that has "top", bottom edge moves with "bottom"
@@ -90,30 +97,28 @@ export const useResizeWidgets = (
 		const scaleX = oldW === 0 ? 1 : newW / oldW;
 		const scaleY = oldH === 0 ? 1 : newH / oldH;
 
-		const nextCoordinates = initialWidgets.map((widget) => {
-			// Measure from top anchor downward (in Y-up: subtracting moves down)
-			const relX = widget.x - bbox.left;
-			const relY = bbox.top - widget.y; // distance from bounding top, always positive
-
-			return {
-				id: widget.id,
+		const boundingBoxes: BoundingBoxes = {};
+		for (const id in initialBoundingBoxes) {
+			const { x, y, width, height } = initialBoundingBoxes[id];
+			const relX = x - bbox.left;
+			const relY = bbox.top - y; // distance from bounding top, always positive
+			boundingBoxes[id] = {
 				x: newBbox.left + relX * scaleX,
 				y: newBbox.top - relY * scaleY, // place from new top, going down
-				width: widget.width * scaleX,
-				height: widget.height * scaleY,
+				width: width * scaleX,
+				height: height * scaleY,
 			};
-		});
-
-		onResizing(nextCoordinates);
+		}
+		onResizing(boundingBoxes);
 	};
 
 	const onWidgetResizeEnd = () => {
 		resizingStarted.current = false;
 		cornerRef.current = null;
-		initialWidgetsRef.current = [];
+		initialBoundingBoxesRef.current = {};
 		startXRef.current = 0;
 		startYRef.current = 0;
 	};
 
 	return { onWidgetResizeStart, onWidgetResizing, onWidgetResizeEnd };
-};
+}

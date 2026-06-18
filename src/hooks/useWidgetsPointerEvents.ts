@@ -1,82 +1,82 @@
 import { useRef, type PointerEvent } from 'react';
 
 import type { Widget } from '../entities/widgets/Widget';
+import type { Coordinate } from '../features/board/types';
 
 const CLICK_THRESHOLD = 2;
 
-export const useWidgetsPointerEvents = (
-	onMoving: (
-		coordinates: Array<{ id: string; x: number; y: number }>,
-	) => void,
+type Coordinates = Record<string, Coordinate>;
+
+export function useWidgetsPointerEvents(
+	onMoving: (coordinates: Coordinates) => void,
 	onClick: (event: PointerEvent<HTMLCanvasElement>, id: string) => void,
-) => {
-	const movingWidgetIdRef = useRef<string>(null);
+) {
+	const startWidgetIdRef = useRef<string>(null);
 	const movedRef = useRef(false);
-	const initialSelectedWidgetsCoordinates = useRef<
-		Array<{ id: string; x: number; y: number }>
-	>([]);
-	const initialX = useRef(0);
-	const initialY = useRef(0);
+	const initialCoordinatesRef = useRef<Coordinates>({});
+	const initialXRef = useRef(0);
+	const initialYRef = useRef(0);
 
 	const onWidgetsMoveStart = (
-		selectedWidgetIds: string[],
-		widgets: Record<string, Widget>,
+		selectedWidgets: Widget[],
+		startWidget: Widget,
 		x: number,
 		y: number,
-		movingWidgetId: string,
 	) => {
-		movingWidgetIdRef.current = movingWidgetId;
+		startWidgetIdRef.current = startWidget.id;
 		movedRef.current = false;
-		if (selectedWidgetIds.includes(movingWidgetId)) {
-			initialSelectedWidgetsCoordinates.current = selectedWidgetIds.map(
-				(id) => ({
-					id,
-					x: widgets[id].x,
-					y: widgets[id].y,
-				}),
-			);
+		if (startWidget.selected) {
+			const coordinates: Coordinates = {};
+			for (const widget of selectedWidgets) {
+				coordinates[widget.id] = {
+					x: widget.x,
+					y: widget.y,
+				};
+			}
+			initialCoordinatesRef.current = coordinates;
 		} else {
-			initialSelectedWidgetsCoordinates.current = [
-				{
-					id: movingWidgetId,
-					x: widgets[movingWidgetId].x,
-					y: widgets[movingWidgetId].y,
+			initialCoordinatesRef.current = {
+				[startWidget.id]: {
+					x: startWidget.x,
+					y: startWidget.y,
 				},
-			];
+			};
 		}
-		initialX.current = x;
-		initialY.current = y;
+		initialXRef.current = x;
+		initialYRef.current = y;
 	};
 
 	const onWidgetsMoving = (x: number, y: number) => {
-		if (movingWidgetIdRef.current === null) return;
+		if (startWidgetIdRef.current === null) return;
 
-		const deltaX = x - initialX.current;
-		const deltaY = y - initialY.current;
+		const deltaX = x - initialXRef.current;
+		const deltaY = y - initialYRef.current;
 		const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
 		if (distance < CLICK_THRESHOLD) return;
 
 		movedRef.current = true;
-		onMoving(
-			initialSelectedWidgetsCoordinates.current.map((coordinate) => ({
-				id: coordinate.id,
-				x: coordinate.x + deltaX,
-				y: coordinate.y + deltaY,
-			})),
-		);
+		const coordinates: Coordinates = {};
+		for (const id in initialCoordinatesRef.current) {
+			const { x, y } = initialCoordinatesRef.current[id];
+			coordinates[id] = {
+				x: x + deltaX,
+				y: y + deltaY,
+			};
+		}
+		onMoving(coordinates);
 	};
 
 	const onWidgetsMoveEnd = (event: PointerEvent<HTMLCanvasElement>) => {
-		if (movingWidgetIdRef.current !== null && !movedRef.current) {
-			onClick(event, movingWidgetIdRef.current);
+		if (startWidgetIdRef.current !== null && !movedRef.current) {
+			onClick(event, startWidgetIdRef.current);
 		}
 
-		movingWidgetIdRef.current = null;
+		startWidgetIdRef.current = null;
 		movedRef.current = false;
-		initialSelectedWidgetsCoordinates.current = [];
-		initialX.current = 0;
-		initialY.current = 0;
+		initialCoordinatesRef.current = {};
+		initialXRef.current = 0;
+		initialYRef.current = 0;
 	};
 
 	return {
@@ -84,4 +84,4 @@ export const useWidgetsPointerEvents = (
 		onWidgetsMoving,
 		onWidgetsMoveEnd,
 	};
-};
+}
