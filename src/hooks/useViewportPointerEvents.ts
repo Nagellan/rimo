@@ -4,7 +4,7 @@ const CLICK_THRESHOLD = 3;
 
 export function useViewportPointerEvents(
 	onMoving: (offsetX: number, offsetY: number) => void,
-	onClick: (event: PointerEvent<HTMLCanvasElement>) => void,
+	onClick?: (event: PointerEvent<HTMLCanvasElement>) => void,
 ) {
 	const movingStartedRef = useRef(false);
 	const movedRef = useRef(false);
@@ -45,7 +45,7 @@ export function useViewportPointerEvents(
 
 	const onViewportMoveEnd = (event: PointerEvent<HTMLCanvasElement>) => {
 		if (movingStartedRef.current && !movedRef.current) {
-			onClick(event);
+			onClick?.(event);
 		}
 
 		movingStartedRef.current = false;

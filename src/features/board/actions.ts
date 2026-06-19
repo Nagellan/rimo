@@ -15,6 +15,9 @@ export const BOARD_ACTION_TYPE = {
 	BRING_BACKWARD: 'bring-backward',
 	BRING_TO_FRONT: 'bring-to-front',
 	BRING_TO_BACK: 'bring-to-back',
+	SELECT: 'select',
+	SELECT_MORE: 'select-more',
+	DESELECT: 'deselect',
 } as const;
 
 type MoveViewportAction = {
@@ -72,20 +75,44 @@ type DuplicateSelectedWidgetsAction = {
 	type: typeof BOARD_ACTION_TYPE.DUPLICATE_SELECTED_WIDGETS;
 };
 
-type BringForward = {
+type BringForwardAction = {
 	type: typeof BOARD_ACTION_TYPE.BRING_FORWARD;
 };
 
-type BringBackward = {
+type BringBackwardAction = {
 	type: typeof BOARD_ACTION_TYPE.BRING_BACKWARD;
 };
 
-type BringToFront = {
+type BringToFrontAction = {
 	type: typeof BOARD_ACTION_TYPE.BRING_TO_FRONT;
 };
 
-type BringToBack = {
+type BringToBackAction = {
 	type: typeof BOARD_ACTION_TYPE.BRING_TO_BACK;
+};
+
+type SelectAction = {
+	type: typeof BOARD_ACTION_TYPE.SELECT;
+	payload: {
+		x1: number;
+		y1: number;
+		x2: number;
+		y2: number;
+	};
+};
+
+type SelectMoreAction = {
+	type: typeof BOARD_ACTION_TYPE.SELECT_MORE;
+	payload: {
+		x1: number;
+		y1: number;
+		x2: number;
+		y2: number;
+	};
+};
+
+type DeselectAction = {
+	type: typeof BOARD_ACTION_TYPE.DESELECT;
 };
 
 export type BoardAction =
@@ -98,9 +125,12 @@ export type BoardAction =
 	| ResetWidgetSelectionAction
 	| DeleteSelectedWidgetsAction
 	| DuplicateSelectedWidgetsAction
-	| BringForward
-	| BringBackward
-	| BringToFront
-	| BringToBack;
+	| BringForwardAction
+	| BringBackwardAction
+	| BringToFrontAction
+	| BringToBackAction
+	| SelectAction
+	| SelectMoreAction
+	| DeselectAction;
 
 export type BoardActionDispatch = (action: BoardAction) => void;

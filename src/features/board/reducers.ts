@@ -6,6 +6,7 @@ export type BoardState = {
 	viewportX: number;
 	viewportY: number;
 	widgets: Record<string, Widget>;
+	selection: { x1: number; y1: number; x2: number; y2: number } | null;
 };
 
 function getSortedWidgetIds(widgets: Record<string, Widget>): string[] {
@@ -293,6 +294,95 @@ export const boardReducer = (
 				),
 			};
 		}
+		case BOARD_ACTION_TYPE.SELECT: {
+			const { x1, y1, x2, y2 } = action.payload;
+
+			const left = Math.min(x1, x2);
+			const right = Math.max(x1, x2);
+			const top = Math.max(y1, y2);
+			const bottom = Math.min(y1, y2);
+
+			const nextWidgets: Record<string, Widget> = {};
+
+			for (const id in prevState.widgets) {
+				const widget = prevState.widgets[id].clone();
+				const widgetLeft = widget.x;
+				const widgetRight = widget.x + widget.width;
+				const widgetTop = widget.y;
+				const widgetBottom = widget.y - widget.height;
+
+				if (
+					left <= widgetRight &&
+					right >= widgetLeft &&
+					bottom <= widgetTop &&
+					top >= widgetBottom
+				) {
+					widget.select();
+				} else {
+					widget.deselect();
+				}
+				nextWidgets[widget.id] = widget;
+			}
+
+			return {
+				...prevState,
+				selection: {
+					x1,
+					y1,
+					x2,
+					y2,
+				},
+				widgets: nextWidgets,
+			};
+		}
+		case BOARD_ACTION_TYPE.SELECT_MORE: {
+			const { x1, y1, x2, y2 } = action.payload;
+
+			const left = Math.min(x1, x2);
+			const right = Math.max(x1, x2);
+			const top = Math.max(y1, y2);
+			const bottom = Math.min(y1, y2);
+
+			const updatedWidgets: Record<string, Widget> = {};
+
+			for (const id in prevState.widgets) {
+				const widget = prevState.widgets[id];
+				const widgetLeft = widget.x;
+				const widgetRight = widget.x + widget.width;
+				const widgetTop = widget.y;
+				const widgetBottom = widget.y - widget.height;
+
+				if (
+					left <= widgetRight &&
+					right >= widgetLeft &&
+					bottom <= widgetTop &&
+					top >= widgetBottom
+				) {
+					updatedWidgets[widget.id] = widget.clone();
+					updatedWidgets[widget.id].select();
+				}
+			}
+
+			return {
+				...prevState,
+				selection: {
+					x1,
+					y1,
+					x2,
+					y2,
+				},
+				widgets: {
+					...prevState.widgets,
+					...updatedWidgets,
+				},
+			};
+		}
+		case BOARD_ACTION_TYPE.DESELECT: {
+			return {
+				...prevState,
+				selection: null,
+			};
+		}
 		default: {
 			throw new Error('Unknown event type!');
 		}
@@ -303,4 +393,5 @@ export const BOARD_INITIAL_STATE: BoardState = {
 	viewportX: 0,
 	viewportY: 0,
 	widgets: {},
+	selection: null,
 };

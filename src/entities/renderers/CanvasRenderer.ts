@@ -179,6 +179,22 @@ export class CanvasRenderer implements Renderer {
 		this.applyStyle(style);
 	}
 
+	public drawSelection(x1: number, y1: number, x2: number, y2: number) {
+		const left = Math.min(x1, x2);
+		const right = Math.max(x1, x2);
+		const top = Math.max(y1, y2);
+		const bottom = Math.min(y1, y2);
+
+		const rect = new Rectangle(
+			left,
+			top,
+			right - left,
+			top - bottom,
+			new Style().fill('#0000ff29').stroke('blue', 1),
+		);
+		this.drawRectangle(rect);
+	}
+
 	public select(widget: Widget) {
 		const rect = new Rectangle(
 			widget.x - SELECTION_PADDING,

@@ -16,7 +16,7 @@ export function Board() {
 
 	const { width, height } = useWindowSize();
 	const dpr = useDevicePixelRatio();
-	const [{ viewportX, viewportY, widgets }] = useBoardState();
+	const [{ viewportX, viewportY, widgets, selection }] = useBoardState();
 	const { handlePointerDown, handlePointerMove, handlePointerUp } =
 		useCanvasPointerEvents(width, height, rendererRef);
 
@@ -33,6 +33,11 @@ export function Board() {
 
 		rendererRef.current.clear();
 
+		if (selection) {
+			const { x1, y1, x2, y2 } = selection;
+			rendererRef.current.drawSelection(x1, y1, x2, y2);
+		}
+
 		const sortedWidgets = Object.values(widgets).sort(
 			(w1, w2) => w1.layer - w2.layer,
 		);
@@ -44,7 +49,7 @@ export function Board() {
 				rendererRef.current.select(widget);
 			}
 		}
-	}, [viewportX, viewportY, width, height, dpr, widgets]);
+	}, [viewportX, viewportY, width, height, dpr, selection, widgets]);
 
 	function setRef(el: HTMLCanvasElement | null) {
 		if (!el) return;

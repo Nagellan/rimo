@@ -5,6 +5,7 @@ import { useBoardState } from '../features/board/contexts';
 import { useResizeWidgets } from './useResizeWidgets';
 import { useViewportPointerEvents } from './useViewportPointerEvents';
 import { useWidgetsPointerEvents } from './useWidgetsPointerEvents';
+import { useSelectPointerEvents } from './useSelectPointerEvents';
 import type { CanvasRenderer } from '../entities/renderers/CanvasRenderer';
 
 export function useCanvasPointerEvents(
@@ -15,11 +16,31 @@ export function useCanvasPointerEvents(
 	const [{ viewportX, viewportY, widgets }, dispatch] = useBoardState();
 
 	const { onViewportMoveStart, onViewportMoving, onViewportMoveEnd } =
-		useViewportPointerEvents(
-			(offsetX, offsetY) => {
+		useViewportPointerEvents((offsetX, offsetY) => {
+			dispatch({
+				type: BOARD_ACTION_TYPE.MOVE_VIEWPORT,
+				payload: { x: offsetX, y: offsetY },
+			});
+		});
+
+	const { onSelectionStart, onSelectionMoving, onSelectionEnd } =
+		useSelectPointerEvents(
+			(event, x1, y1, x2, y2) => {
+				if (event.shiftKey) {
+					dispatch({
+						type: BOARD_ACTION_TYPE.SELECT_MORE,
+						payload: { x1, y1, x2, y2 },
+					});
+				} else {
+					dispatch({
+						type: BOARD_ACTION_TYPE.SELECT,
+						payload: { x1, y1, x2, y2 },
+					});
+				}
+			},
+			() => {
 				dispatch({
-					type: BOARD_ACTION_TYPE.MOVE_VIEWPORT,
-					payload: { x: offsetX, y: offsetY },
+					type: BOARD_ACTION_TYPE.DESELECT,
 				});
 			},
 			(event) => {
@@ -73,6 +94,17 @@ export function useCanvasPointerEvents(
 	}
 
 	function handlePointerDown(event: PointerEvent<HTMLCanvasElement>) {
+		// scroll button down
+		if (event.button === 1) {
+			onViewportMoveStart(
+				viewportX,
+				viewportY,
+				event.nativeEvent.offsetX,
+				event.nativeEvent.offsetY,
+			);
+			return;
+		}
+
 		const [x, y] = getCenteredCoordinates(
 			event.nativeEvent.offsetX,
 			event.nativeEvent.offsetY,
@@ -110,13 +142,7 @@ export function useCanvasPointerEvents(
 				onWidgetsMoveStart(selectedWidgets, topLayerWidget, x, y);
 			}
 		} else {
-			// pointer is down on grid
-			onViewportMoveStart(
-				viewportX,
-				viewportY,
-				event.nativeEvent.offsetX,
-				event.nativeEvent.offsetY,
-			);
+			onSelectionStart(x, y);
 		}
 	}
 
@@ -127,12 +153,14 @@ export function useCanvasPointerEvents(
 		);
 
 		onViewportMoving(event.nativeEvent.offsetX, event.nativeEvent.offsetY);
+		onSelectionMoving(event, x, y);
 		onWidgetsMoving(x, y);
 		onWidgetResizing(x, y);
 	}
 
 	function handlePointerUp(event: PointerEvent<HTMLCanvasElement>) {
 		onViewportMoveEnd(event);
+		onSelectionEnd(event);
 		onWidgetsMoveEnd(event);
 		onWidgetResizeEnd();
 	}

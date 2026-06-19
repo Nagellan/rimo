@@ -5,3 +5,4 @@ export { useViewportPointerEvents } from './useViewportPointerEvents';
 export { useWidgetsPointerEvents } from './useWidgetsPointerEvents';
 export { useResizeWidgets } from './useResizeWidgets';
 export { useKeyboardEvents } from './useKeyboardEvents';
+export { useSelectPointerEvents } from './useSelectPointerEvents';
